@@ -1,0 +1,11 @@
+services:
+  app:
+    image: postgres:14.9
+    container_name: studyDB
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: senha123
+    volumes:
+      - ./scripts:/docker-entrypoint-initdb.d
