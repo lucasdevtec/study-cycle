@@ -14,18 +14,21 @@ datasource db {
 }
 
 model User {
-  id               Int        @id @default(autoincrement())
-  email            String     @unique
-  name             String?    
-  nickname         String?    
-  horasCiclo       Int?    
+  id                Int        @id @default(autoincrement())
+  email             String     @unique
+  name              String?    
+  nickname          String?    
+  horasCiclo        Int?    
+  materias          Materia[]
 }
 
-model Materias {
-  id               Int        @id @default(autoincrement())
-  nome             String     @unique
-  peso             Int
-  dificuldade      Int
-  horasTotais      Int?
-  horasConcluidas  Int?
+model Materia {
+  id                Int        @id @default(autoincrement())
+  nome              String     @unique
+  peso              Int
+  dificuldade       Int
+  horasTotais       Int?
+  horasConcluidas   Int?
+  usuarioDetentor   User @relation(fields: [idUsuario], references: [id])
+  idUsuario         Int
 } 
