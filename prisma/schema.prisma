@@ -14,17 +14,18 @@ datasource db {
 }
 
 model User {
-  id           Int        @id @default(autoincrement())
-  email        String     @unique
-  password     String     
-  name         String?    
-  nickname     String?    
-  horasCiclo   Int?    
+  id               Int        @id @default(autoincrement())
+  email            String     @unique
+  name             String?    
+  nickname         String?    
+  horasCiclo       Int?    
 }
 
 model Materias {
-  id           Int        @id @default(autoincrement())
-  nome         String     @unique
-  peso         Int
-  dificuldade  Int
+  id               Int        @id @default(autoincrement())
+  nome             String     @unique
+  peso             Int
+  dificuldade      Int
+  horasTotais      Int?
+  horasConcluidas  Int?
 } 
