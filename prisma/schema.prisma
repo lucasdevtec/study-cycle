@@ -14,21 +14,26 @@ datasource db {
 }
 
 model User {
-  id                Int        @id @default(autoincrement())
-  email             String     @unique
-  name              String?    
-  nickname          String?    
-  horasCiclo        Int?    
+  id                String        @id @default(uuid())
+  email             String        @unique
+  name              String?       
+  password          String          
+  horasCiclo        Int?          @default(20)
   materias          Materia[]
+  createdAt         DateTime?     @default(now())
+  updatedAt         DateTime?     @updatedAt
 }
 
 model Materia {
-  id                Int        @id @default(autoincrement())
-  nome              String     @unique
-  peso              Int
-  dificuldade       Int
-  horasTotais       Int?
-  horasConcluidas   Int?
-  usuarioDetentor   User @relation(fields: [idUsuario], references: [id])
-  idUsuario         Int
+  id                Int           @id @default(autoincrement())
+  nome              String        @unique
+  peso              Int           
+  dificuldade       Int           
+  horasTotais       Int?          
+  horasConcluidas   Int?          
+  incluso           Boolean       @default(false)
+  usuarioDetentor   User          @relation(fields: [idUsuario], references: [id])
+  idUsuario         String           
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @default(now())
 } 

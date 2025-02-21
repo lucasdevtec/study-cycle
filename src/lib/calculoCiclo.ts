@@ -1,6 +1,3 @@
-import { Materias } from "@prisma/client";
+import { Materia } from "@prisma/client";
 
-export default function calculoCiclo(
-  materias: Materias[],
-  horasCiclo: Number
-) {}
+export default function calculoCiclo(materias: Materia[], horasCiclo: Number) {}

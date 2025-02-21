@@ -1,10 +1,12 @@
 -- CreateTable
 CREATE TABLE "User" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "name" TEXT,
-    "nickname" TEXT,
-    "horasCiclo" INTEGER,
+    "password" TEXT NOT NULL,
+    "horasCiclo" INTEGER DEFAULT 20,
+    "createdAt" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3),
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
@@ -17,7 +19,10 @@ CREATE TABLE "Materia" (
     "dificuldade" INTEGER NOT NULL,
     "horasTotais" INTEGER,
     "horasConcluidas" INTEGER,
-    "idUsuario" INTEGER NOT NULL,
+    "incluso" BOOLEAN NOT NULL DEFAULT false,
+    "idUsuario" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "Materia_pkey" PRIMARY KEY ("id")
 );
