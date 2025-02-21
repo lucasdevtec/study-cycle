@@ -10,13 +10,11 @@ export default function RegisterPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
     const loadingToast = toast.loading('Cadastrando...');
 
@@ -26,26 +24,15 @@ export default function RegisterPage() {
         email,
         password,
       });
-      toast.update(loadingToast, {
-        render: 'Cadastro realizado com sucesso! 🎉',
-        type: 'success',
-        isLoading: false,
-        autoClose: 3000,
-      });
-      const login = await signIn('Credentials', {
-        email,
-        password,
-        redirect: false,
-        callbackUrl: '/dashboard',
-      });
+      const login = await signIn('credentials', { redirect: false, password: password, email: email });
       if (login?.error) {
+        throw login.error;
       } else {
         router.push('/dashboard');
       }
     } catch (error: any) {
-      setError(error.message || 'Erro inesperado.');
       toast.update(loadingToast, {
-        render: error.message || 'Erro inesperado.',
+        render: error || 'Erro inesperado.',
         type: 'error',
         isLoading: false,
         autoClose: 3000,
@@ -54,7 +41,6 @@ export default function RegisterPage() {
       setLoading(false);
     }
   };
-  // {error && <Typography color="error">{error}</Typography>}
 
   return (
     <Container maxWidth="sm">

@@ -12,7 +12,7 @@ export default function SessionGuard({ children }: SessionGuardProps) {
 
   useEffect(() => {
     if (status === 'unauthenticated') {
-      signIn(undefined, { callbackUrl: '/dashboard' });
+      signIn('credentials', { callbackUrl: '/dashboard' });
     }
   }, [status]);
 

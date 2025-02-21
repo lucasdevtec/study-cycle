@@ -1,9 +1,9 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { getCsrfToken, signIn, useSession } from 'next-auth/react';
+import { signIn, useSession } from 'next-auth/react';
 import { Container, TextField, Button, Typography, Box } from '@mui/material';
 import { toast } from 'react-toastify';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -19,42 +19,27 @@ export default function LoginPage() {
     }
   }, [session, router]);
 
-  const [csrfToken, setCsrfToken] = useState('');
-  const [modalIsOpen, setModalIsOpen] = useState(false);
-  const searchParams = useSearchParams();
-  const error = searchParams.get('error');
-
-  useEffect(() => {
-    async function fetchCsrfToken() {
-      const token = await getCsrfToken();
-      setCsrfToken(token || '');
-    }
-    fetchCsrfToken();
-
-    if (error) toast.error('Usuário e/ou senha invalidos!');
-  }, []);
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const loadingToast = toast.loading('Cadastrando...');
+    const loadingToast = toast.loading('Logando...');
 
     try {
-      const res = await signIn('login', {
-        email,
-        password,
-        redirect: false,
-      });
-      alert(res);
+      const res = await signIn('credentials', { redirect: false, password: password, email: email });
+
+      if (res?.error) {
+        throw res?.error;
+      }
+
       toast.update(loadingToast, {
-        render: 'Cadastro realizado com sucesso! 🎉',
+        render: 'Login realizado com sucesso! 🎉',
         type: 'success',
         isLoading: false,
         autoClose: 3000,
       });
     } catch (error: any) {
       toast.update(loadingToast, {
-        render: error.message || 'Erro inesperado.',
+        render: error || error?.message || 'Erro inesperado.',
         type: 'error',
         isLoading: false,
         autoClose: 3000,
@@ -70,7 +55,7 @@ export default function LoginPage() {
         <Typography variant="h5" sx={{ mb: 2 }}>
           Login
         </Typography>
-        <form method="POST" action="/api/auth/callback/credentials">
+        <form onSubmit={handleLogin}>
           <TextField label="Email" fullWidth margin="normal" value={email} onChange={(e) => setEmail(e.target.value)} />
           <TextField label="Senha" type="password" fullWidth margin="normal" value={password} onChange={(e) => setPassword(e.target.value)} />
           <Button type="submit" variant="contained" color="primary" fullWidth sx={{ mt: 2 }} disabled={loading}>

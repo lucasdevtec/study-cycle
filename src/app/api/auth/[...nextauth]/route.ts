@@ -1,16 +1,16 @@
-import NextAuth, { AuthOptions } from "next-auth";
-import bcrypt from "bcrypt";
-import CredentialsProvider from "next-auth/providers/credentials";
-import userDAO from "@/DAO/users";
-import { loginSchema } from "@/schemas/userSchema";
+import NextAuth, { AuthOptions } from 'next-auth';
+import bcrypt from 'bcrypt';
+import CredentialsProvider from 'next-auth/providers/credentials';
+import userDAO from '@/DAO/users';
+import { loginSchema } from '@/schemas/userSchema';
 
 export const authOptions: AuthOptions = {
   providers: [
     CredentialsProvider({
-      name: "Credentials",
+      name: 'login',
       credentials: {
-        email: { label: "Email", type: "text", placeholder: "seu@email.com" },
-        password: { label: "Senha", type: "password" },
+        email: { label: 'Email', type: 'text', placeholder: 'seu@email.com' },
+        password: { label: 'Senha', type: 'password' },
       },
       async authorize(credentials) {
         const parsedCredentials = loginSchema.safeParse(credentials);
@@ -20,12 +20,12 @@ export const authOptions: AuthOptions = {
         const { email, password } = parsedCredentials.data;
         const user = await userDAO.listarUserPorEmail(email);
         if (!user) {
-          throw new Error("Usuário não encontrado.");
+          throw new Error('Usuário não encontrado.');
         }
         const passwordMatch = await bcrypt.compare(password, user.password);
 
         if (!passwordMatch) {
-          throw new Error("Senha incorreta.");
+          throw new Error('Senha incorreta.');
         }
         return {
           id: user.id,
@@ -35,12 +35,22 @@ export const authOptions: AuthOptions = {
       },
     }),
   ],
-  pages: {
-    signIn: "/auth/login",
+  cookies: {
+    sessionToken: {
+      name: `next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production', // Garantir que os cookies sejam seguros em produção
+      },
+    },
   },
+  pages: { error: '/auth/error' },
   session: {
-    strategy: "jwt",
-    maxAge: 14400,
+    strategy: 'jwt', // Garantindo que o JWT seja usado como estratégia
+    maxAge: 60 * 60 * 4, // 4 horas para expiração do JWT
+    updateAge: 60 * 60, // Atualizar o JWT a cada hora
   },
   callbacks: {
     async jwt({ token, user }) {

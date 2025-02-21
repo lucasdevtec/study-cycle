@@ -1,4 +1,6 @@
-import TransitionsModal from "@/components/modal";
+'use client';
+
+import TransitionsModal from '@/components/modal';
 
 export default function Home() {
   return (
