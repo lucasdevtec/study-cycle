@@ -8,7 +8,6 @@ export interface InitalDataOfUser {
 export interface EditDataOfUser {
   email?: string;
   name?: string;
-  password?: string;
   horasCiclo?: number;
 }
 
