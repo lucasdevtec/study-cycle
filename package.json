@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@emotion/cache": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
     "@mui/icons-material": "^6.4.4",
     "@mui/material-nextjs": "^6.4.3",
     "@prisma/client": "^6.3.1",
@@ -20,6 +21,7 @@
     "next-auth": "^4.24.11",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-toastify": "^11.0.3",
     "sharp": "^0.33.5",
     "zod": "^3.24.2"
   },
