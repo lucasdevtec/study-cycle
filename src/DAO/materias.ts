@@ -13,7 +13,7 @@ async function criarVariasMaterias(dados: InitalDataOfMateria[]) {
   });
 }
 
-async function listarMaterias(idUsuario: string) {
+async function listarMateriasDoUsuario(idUsuario: string) {
   return await prisma.materia.findMany({
     where: { idUsuario: idUsuario },
   });
@@ -31,7 +31,7 @@ async function editarMateria(id: number, dados: EditDataOfMateria) {
 
 export default {
   criarMateria,
-  listarMaterias,
+  listarMateriasDoUsuario,
   deletarMateria,
   editarMateria,
   criarVariasMaterias,
