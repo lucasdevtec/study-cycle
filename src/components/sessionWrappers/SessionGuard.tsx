@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactElement, ReactNode, useEffect } from 'react';
+import { ReactNode, useEffect } from 'react';
 import { signIn, useSession } from 'next-auth/react';
 
 interface SessionGuardProps {
@@ -12,7 +12,7 @@ export default function SessionGuard({ children }: SessionGuardProps) {
 
   useEffect(() => {
     if (status === 'unauthenticated') {
-      signIn('credentials', { callbackUrl: '/dashboard' });
+      signIn();
     }
   }, [status]);
 

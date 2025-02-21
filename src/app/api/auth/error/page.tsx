@@ -10,10 +10,6 @@ export default function AuthErrorPage() {
   const error = searchParams.get('error');
   const router = useRouter();
 
-  useEffect(() => {
-    console.error('Erro de autenticação:', error);
-  }, [error]);
-
   const errorMessage = {
     Configuration: 'Erro de configuração no provedor de autenticação.',
     AccessDenied: 'Acesso negado. Você não tem permissão para acessar este recurso.',
@@ -30,7 +26,7 @@ export default function AuthErrorPage() {
         <Typography variant="body1" sx={{ mb: 3 }}>
           {errorMessage[error as keyof typeof errorMessage] || errorMessage.default}
         </Typography>
-        <Button variant="contained" color="primary" onClick={() => router.push('/auth/login')}>
+        <Button variant="contained" color="primary" onClick={() => router.push('/auth/signin')}>
           Voltar ao Login
         </Button>
       </Box>
