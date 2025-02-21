@@ -1,8 +1,8 @@
 export interface InitalDataOfUser {
   email: string;
-  name?: string | undefined;
+  name: string;
   password: string;
-  horasCiclo?: number | undefined;
+  horasCiclo?: number;
 }
 
 export interface EditDataOfUser {
@@ -10,4 +10,33 @@ export interface EditDataOfUser {
   name?: string;
   password?: string;
   horasCiclo?: number;
+}
+
+export interface FullDataOfMateria {
+  id: number;
+  nome: string;
+  dificuldade: number;
+  horasTotais: number | null;
+  horasConcluidas: number | null;
+  incluso: boolean;
+  idUsuario: string;
+  createdAt: Date;
+  updatedAt?: Date;
+}
+
+export interface EditDataOfMateria {
+  nome?: string;
+  dificuldade?: number;
+  horasTotais?: number | null;
+  horasConcluidas?: number | null;
+  incluso?: boolean;
+}
+
+export interface InitalDataOfMateria {
+  nome: string;
+  dificuldade: number;
+  horasTotais?: number | null;
+  horasConcluidas?: number | null;
+  idUsuario: string;
+  incluso?: boolean;
 }

@@ -1,13 +1,13 @@
-import prisma from "@/lib/prisma";
-import { Materia } from "@prisma/client";
+import prisma from '@/lib/prisma';
+import { EditDataOfMateria, InitalDataOfMateria } from '../../types/models';
 
-async function criarMateria(dados: Materia) {
+async function criarMateria(dados: InitalDataOfMateria) {
   return await prisma.materia.create({
     data: { ...dados },
   });
 }
 
-async function criarVariasMaterias(dados: Materia[]) {
+async function criarVariasMaterias(dados: InitalDataOfMateria[]) {
   return await prisma.materia.createMany({
     data: dados,
   });
@@ -25,7 +25,7 @@ async function deletarMateria(id: number) {
   });
 }
 
-async function editarMateria(id: number, dados: Materia) {
+async function editarMateria(id: number, dados: EditDataOfMateria) {
   return await prisma.materia.update({ where: { id: id }, data: { ...dados } });
 }
 
