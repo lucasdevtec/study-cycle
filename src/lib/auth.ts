@@ -2,7 +2,7 @@ import bcrypt from 'bcrypt';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import userDAO from '@/DAO/users';
 import { loginSchema } from '@/schemas/userSchema';
-import { AuthOptions } from 'next-auth';
+import { AuthOptions, getServerSession } from 'next-auth';
 
 export const authOptions: AuthOptions = {
   providers: [
@@ -70,3 +70,7 @@ export const authOptions: AuthOptions = {
     },
   },
 };
+
+export function getSession() {
+  return getServerSession(authOptions);
+}

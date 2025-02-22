@@ -1,11 +1,10 @@
 import * as userController from '@/Controllers/userController';
-import { authOptions } from '@/lib/auth';
-import { getServerSession } from 'next-auth';
+import { getSession } from '@/lib/auth';
 import { NextResponse } from 'next/server';
 
 export async function GET(req: Request) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getSession();
     if (!session) {
       return NextResponse.json({ error: 'Usuário não Authenticado' }, { status: 401 });
     }
@@ -32,7 +31,7 @@ export async function GET(req: Request) {
 
 export async function PUT(req: Request) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getSession();
     if (!session) {
       return NextResponse.json({ error: 'Usuário não Authenticado' }, { status: 401 });
     }
