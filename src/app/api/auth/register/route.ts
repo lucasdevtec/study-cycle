@@ -5,8 +5,12 @@ export async function POST(req: Request) {
   try {
     const data = await req.json();
     return await createUser(data);
-  } catch (error: any) {
-    console.log(error.message);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.log(error.message);
+    } else {
+      console.log('Erro desconhecido', error);
+    }
     return NextResponse.json({ error: 'Erro interno inesperado!' }, { status: 500 });
   }
 }

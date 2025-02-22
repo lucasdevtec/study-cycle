@@ -2,7 +2,7 @@
 
 import { Geist, Geist_Mono } from 'next/font/google';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 import { SessionProvider } from 'next-auth/react';
 
 const geistSans = Geist({

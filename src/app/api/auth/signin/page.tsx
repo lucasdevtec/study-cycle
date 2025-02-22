@@ -37,9 +37,9 @@ export default function LoginPage() {
         isLoading: false,
         autoClose: 3000,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast.update(loadingToast, {
-        render: error || error?.message || 'Erro inesperado.',
+        render: typeof error === 'string' ? error : 'Erro inesperado.',
         type: 'error',
         isLoading: false,
         autoClose: 3000,

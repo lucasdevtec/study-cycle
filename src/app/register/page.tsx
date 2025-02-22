@@ -30,9 +30,9 @@ export default function RegisterPage() {
       } else {
         router.push('/dashboard');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast.update(loadingToast, {
-        render: error || 'Erro inesperado.',
+        render: typeof error === 'string' ? error : 'Erro inesperado.',
         type: 'error',
         isLoading: false,
         autoClose: 3000,

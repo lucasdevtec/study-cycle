@@ -1,5 +1,5 @@
-import prisma from "@/lib/prisma";
-import { EditDataOfUser, InitalDataOfUser } from "../../types/models";
+import prisma from '@/lib/prisma';
+import { EditDataOfUser, InitalDataOfUser } from '../../types/models';
 
 async function criarUser(dados: InitalDataOfUser) {
   return await prisma.user.create({
@@ -51,10 +51,12 @@ async function editarUser(id: string, dados: EditDataOfUser) {
   });
 }
 
-export default {
+const materiaDAO = {
   criarUser,
   listarUser,
   deletarUser,
   listarUserPorEmail,
   editarUser,
 };
+
+export default materiaDAO;

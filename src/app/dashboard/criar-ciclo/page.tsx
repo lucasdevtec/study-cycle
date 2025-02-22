@@ -1,3 +1,3 @@
-export default function () {
+export default function MakeCiclo() {
   return <p>Oi</p>;
 }

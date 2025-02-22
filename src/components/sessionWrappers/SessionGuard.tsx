@@ -8,7 +8,7 @@ interface SessionGuardProps {
 }
 
 export default function SessionGuard({ children }: SessionGuardProps) {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
 
   useEffect(() => {
     if (status === 'unauthenticated') {

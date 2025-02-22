@@ -29,10 +29,12 @@ async function editarMateria(id: number, dados: EditDataOfMateria) {
   return await prisma.materia.update({ where: { id: id }, data: { ...dados } });
 }
 
-export default {
+const userDAO = {
   criarMateria,
   listarMateriasDoUsuario,
   deletarMateria,
   editarMateria,
   criarVariasMaterias,
 };
+
+export default userDAO;
