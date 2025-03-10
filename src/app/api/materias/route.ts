@@ -1,13 +1,12 @@
 import { createMateriaController } from '@/Controllers/materiaController';
 import { getSession } from '@/lib/auth';
-import { getServerSession } from 'next-auth';
 import { NextResponse } from 'next/server';
 
 export async function GET(req: Request) {
   try {
     const session = await getSession();
     if (!session) {
-      return NextResponse.json({ error: 'Usuário não Authenticado' }, { status: 401 });
+      return NextResponse.json({ error: 'Usuário não Autenticado' }, { status: 401 });
     }
     const { searchParams } = new URL(req.url);
     const query = searchParams.get('query');
@@ -28,7 +27,7 @@ export async function POST(req: Request) {
   try {
     const session = await getSession();
     if (!session) {
-      return NextResponse.json({ error: 'Usuário não Authenticado' }, { status: 401 });
+      return NextResponse.json({ error: 'Usuário não Autenticado' }, { status: 401 });
     }
     const data = await req.json();
     return await createMateriaController({ ...data, idUsuario: session.user.id });

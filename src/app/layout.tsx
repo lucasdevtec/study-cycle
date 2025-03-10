@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
 import { ToastContainer } from 'react-toastify';
 import { SessionProvider } from 'next-auth/react';
+import '@/app/reset.css';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',

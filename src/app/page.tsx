@@ -1,13 +1,14 @@
 'use client';
 
-import TransitionsModal from '@/components/modal';
+import Footer from '@/components/footer';
+import HeaderPublic from '@/components/headerPublic';
 
 export default function Home() {
   return (
     <>
-      <main>
-        <TransitionsModal />
-      </main>
+      <HeaderPublic />
+      <main>Oi Main</main>
+      <Footer />
     </>
   );
 }
