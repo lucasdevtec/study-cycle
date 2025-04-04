@@ -6,7 +6,7 @@ export const emailSchema = z.string().email();
 export const booleanSchema = z.boolean();
 export const passwordSchema = z
   .string()
-  .min(10, 'Senha deve ter pelo menos 6 caracteres')
+  .min(10, 'Senha deve ter pelo menos 10 caracteres')
   .refine((value) => /[A-Z]/.test(value), {
     message: 'A senha deve conter pelo menos uma letra maiúscula',
   })

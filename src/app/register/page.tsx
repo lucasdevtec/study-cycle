@@ -31,12 +31,31 @@ export default function RegisterPage() {
         router.push('/dashboard');
       }
     } catch (error: unknown) {
-      toast.update(loadingToast, {
-        render: typeof error === 'string' ? error : 'Erro inesperado.',
-        type: 'error',
-        isLoading: false,
-        autoClose: 3000,
-      });
+      if (typeof error === 'string') {
+        toast.update(loadingToast, {
+          render: error,
+          type: 'error',
+          isLoading: false,
+          autoClose: 3000,
+        });
+      } else if (error instanceof Error) {
+        toast.update(loadingToast, {
+          render: 'Erro inesperado ocorreu!',
+          type: 'error',
+          isLoading: false,
+          autoClose: 3000,
+        });
+      } else {
+        toast.update(loadingToast, {
+          render:
+            error && typeof error === 'object' && 'message' in error && typeof error?.message === 'string'
+              ? error.message
+              : 'Erro inesperado ocorreu!',
+          type: 'error',
+          isLoading: false,
+          autoClose: 3000,
+        });
+      }
     } finally {
       setLoading(false);
     }
