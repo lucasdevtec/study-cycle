@@ -1,66 +1,106 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+import BoltIcon from "@mui/icons-material/Bolt";
+import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
+import InsightsIcon from "@mui/icons-material/Insights";
+import PlayCircleOutlineIcon from "@mui/icons-material/PlayCircleOutline";
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Chip,
+  Container,
+  Grid,
+  Stack,
+  Typography,
+} from "@mui/material";
+import Link from "next/link";
+import AppHeader from "@/components/layout/AppHeader";
+import { PlayCircle } from "@mui/icons-material";
+
+const features = [
+  {
+    title: "Mapeamento de Afinidade",
+    description:
+      "Classifique cada materia de 1 a 5 para mostrar onde esta sua maior dor.",
+    icon: <InsightsIcon color="primary" />,
+  },
+  {
+    title: "Peso Estrategico",
+    description:
+      "Some pesos extras para materias com edital extenso ou prioridade na prova.",
+    icon: <BoltIcon color="primary" />,
+  },
+  {
+    title: "Proporcionalidade Inversa",
+    description:
+      "Quanto pior sua afinidade, mais horas recomendadas para evoluir rapido.",
+    icon: <CalendarMonthIcon color="primary" />,
+  },
+];
 
 export default function Home() {
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.js file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <Box
+      sx={{
+        minHeight: "100vh",
+        background: "linear-gradient(150deg, #edf7f4 0%, #fef8e9 100%)",
+      }}
+    >
+      <AppHeader />
+      <Container maxWidth="lg" sx={{ pt: { xs: 5, md: 10 }, pb: 10 }}>
+        <Stack spacing={3} sx={{ mb: 8 }}>
+          <Chip
+            label="Onde seu esforco encontra o equilibrio"
+            color="primary"
+            sx={{ width: "fit-content" }}
+          />
+          <Typography
+            variant="h1"
+            sx={{ fontSize: { xs: "2rem", md: "3.3rem" }, maxWidth: 820 }}
           >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            StudyCycle transforma seu estudo em progresso continuo, sem horarios
+            engessados.
+          </Typography>
+          <Typography
+            variant="h6"
+            color="text.secondary"
+            sx={{ maxWidth: 780, lineHeight: 1.6 }}
           >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+            Classifique afinidade, adicione peso estrategico e receba uma
+            distribuicao inteligente de horas. Se pausar hoje, voce retoma
+            amanha de onde parou.
+          </Typography>
+          <Box>
+            <Button
+              component={Link}
+              href="/ciclo/criar"
+              variant="contained"
+              size="large"
+              startIcon={<PlayCircle />}
+            >
+              Comecar Ciclo Gratuitamente
+            </Button>
+          </Box>
+        </Stack>
+
+        <Grid container spacing={3}>
+          {features.map((feature) => (
+            <Grid key={feature.title} size={{ xs: 12, md: 4 }}>
+              <Card sx={{ height: "100%", border: "1px solid #d8e9e3" }}>
+                <CardContent>
+                  <Stack spacing={2}>
+                    {feature.icon}
+                    <Typography variant="h5">{feature.title}</Typography>
+                    <Typography color="text.secondary">
+                      {feature.description}
+                    </Typography>
+                  </Stack>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      </Container>
+    </Box>
   );
 }
