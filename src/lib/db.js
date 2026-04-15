@@ -1,6 +1,6 @@
-import { defineCycleModel } from "@/models/Cycle";
-import { defineCycleSubjectModel } from "@/models/CycleSubject";
-import { defineUserModel } from "@/models/User";
+import { defineCycleModel } from "@/database/models/Cycle";
+import { defineCycleSubjectModel } from "@/database/models/CycleSubject";
+import { defineUserModel } from "@/database/models/User";
 import { getSequelize } from "@/lib/sequelize";
 
 let initialized = false;
