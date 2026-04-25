@@ -1,7 +1,6 @@
 "use client";
 
 import BarChartIcon from "@mui/icons-material/BarChart";
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import TimerIcon from "@mui/icons-material/Timer";
 import {
@@ -22,6 +21,7 @@ import {
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import AppHeader from "@/components/layout/AppHeader";
+import { CheckCircleOutlined } from "@mui/icons-material";
 
 export default function DashboardPage() {
   const [cycles, setCycles] = useState([]);
@@ -72,7 +72,7 @@ export default function DashboardPage() {
     {
       label: "Disciplinas no total",
       value: String(totalSubjects),
-      icon: <CheckCircleOutlineIcon color="primary" />,
+      icon: <CheckCircleOutlined color="primary" />,
     },
   ];
 

@@ -12,54 +12,75 @@ import {
   Typography,
   Alert,
   CircularProgress,
-  Divider,
 } from "@mui/material";
-import { Google as GoogleIcon, LockOutlined } from "@mui/icons-material";
+import { PersonAdd as PersonAddIcon } from "@mui/icons-material";
 import { signIn } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import AppHeader from "@/components/layout/AppHeader";
 
-export default function LoginPage() {
+export default function SignupPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
-  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
-  const credentialsError = searchParams.get("error");
-
-  const handleCredentialsLogin = async (e) => {
+  const handleSignup = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError("");
+    setSuccess("");
+
+    if (password !== confirmPassword) {
+      setError("As senhas não conferem");
+      return;
+    }
+
+    if (password.length < 8) {
+      setError("A senha deve ter no mínimo 8 caracteres");
+      return;
+    }
+
+    setLoading(true);
 
     try {
-      const result = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          password,
+        }),
       });
 
-      if (result?.error) {
-        setError(result.error);
-      } else if (result?.ok) {
-        router.push(callbackUrl);
-      }
-    } catch (err) {
-      setError("Erro ao fazer login. Tente novamente.");
-    } finally {
-      setLoading(false);
-    }
-  };
+      const data = await response.json();
 
-  const handleGoogleLogin = async () => {
-    setLoading(true);
-    try {
-      await signIn("google", { callbackUrl });
+      if (!response.ok) {
+        setError(data.message || "Erro ao criar conta");
+        return;
+      }
+
+      setSuccess("Conta criada com sucesso! Redirecionando...");
+
+      setTimeout(async () => {
+        const result = await signIn("credentials", {
+          email,
+          password,
+          redirect: false,
+        });
+
+        if (result?.ok) {
+          router.push("/dashboard");
+        }
+      }, 1500);
     } catch (err) {
-      setError("Erro ao fazer login com Google.");
+      setError("Erro ao criar conta. Tente novamente.");
+    } finally {
       setLoading(false);
     }
   };
@@ -77,19 +98,23 @@ export default function LoginPage() {
           <CardContent sx={{ p: 4 }}>
             <Stack spacing={3}>
               <Stack direction="row" alignItems="center" spacing={1}>
-                <LockOutlined color="primary" />
-                <Typography variant="h4">Entrar no StudyCycle</Typography>
+                <PersonAddIcon color="primary" />
+                <Typography variant="h4">Criar Conta</Typography>
               </Stack>
 
               {error && <Alert severity="error">{error}</Alert>}
-              {credentialsError && (
-                <Alert severity="error">
-                  Erro de autenticação. Verifique suas credenciais.
-                </Alert>
-              )}
+              {success && <Alert severity="success">{success}</Alert>}
 
-              <form onSubmit={handleCredentialsLogin}>
+              <form onSubmit={handleSignup}>
                 <Stack spacing={2}>
+                  <TextField
+                    label="Nome"
+                    fullWidth
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    disabled={loading}
+                    required
+                  />
                   <TextField
                     label="Email"
                     type="email"
@@ -107,13 +132,23 @@ export default function LoginPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     disabled={loading}
                     required
+                    helperText="Mínimo 8 caracteres"
+                  />
+                  <TextField
+                    label="Confirmar Senha"
+                    type="password"
+                    fullWidth
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    disabled={loading}
+                    required
                   />
                   <Button
                     variant="contained"
                     size="large"
                     type="submit"
                     disabled={loading}
-                    sx={{ position: "relative" }}
+                    sx={{ position: "relative", mt: 2 }}
                   >
                     {loading && (
                       <CircularProgress
@@ -128,33 +163,21 @@ export default function LoginPage() {
                     <span
                       style={{ visibility: loading ? "hidden" : "visible" }}
                     >
-                      Entrar
+                      Criar Conta
                     </span>
                   </Button>
                 </Stack>
               </form>
 
-              <Divider sx={{ my: 1 }}>ou</Divider>
-
-              <Button
-                variant="outlined"
-                size="large"
-                onClick={handleGoogleLogin}
-                disabled={loading}
-                startIcon={<GoogleIcon />}
-              >
-                Entrar com Google
-              </Button>
-
               <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-                Não tem conta?{" "}
+                Já tem conta?{" "}
                 <Button
                   variant="text"
                   size="small"
-                  href="/signup"
+                  href="/login"
                   sx={{ textTransform: "none" }}
                 >
-                  Registre-se
+                  Faça login
                 </Button>
               </Typography>
             </Stack>

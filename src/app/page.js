@@ -1,7 +1,8 @@
+"use client";
+
 import BoltIcon from "@mui/icons-material/Bolt";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import InsightsIcon from "@mui/icons-material/Insights";
-import PlayCircleOutlineIcon from "@mui/icons-material/PlayCircleOutline";
 import {
   Box,
   Button,

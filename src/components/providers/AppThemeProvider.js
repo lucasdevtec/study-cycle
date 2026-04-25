@@ -1,6 +1,7 @@
 "use client";
 
 import { CssBaseline, ThemeProvider, createTheme } from "@mui/material";
+import { SessionProvider } from "next-auth/react";
 
 const theme = createTheme({
   palette: {
@@ -37,11 +38,13 @@ const theme = createTheme({
   },
 });
 
-export default function AppThemeProvider({ children }) {
+export default function AppThemeProvider({ children, session }) {
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      {children}
-    </ThemeProvider>
+    <SessionProvider session={session}>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        {children}
+      </ThemeProvider>
+    </SessionProvider>
   );
 }

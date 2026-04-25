@@ -1,7 +1,6 @@
 "use client";
 
 import AddIcon from "@mui/icons-material/Add";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import {
   Alert,
   Box,
@@ -20,6 +19,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import AppHeader from "@/components/layout/AppHeader";
 import { affinityOptions, calculateCyclePlan } from "@/lib/cycle";
+import { DeleteOutlined } from "@mui/icons-material";
 
 const emptySubject = {
   name: "",
@@ -213,7 +213,7 @@ export default function CreateCyclePage() {
                             fullWidth
                             sx={{ minWidth: 0, height: "100%" }}
                           >
-                            <DeleteOutlineIcon />
+                            <DeleteOutlined />
                           </Button>
                         </Grid>
                       </Grid>
