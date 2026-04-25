@@ -1,7 +1,7 @@
 "use client";
 
 import AutoGraphIcon from "@mui/icons-material/AutoGraph";
-import { LogOut as LogOutIcon } from "@mui/icons-material";
+import { Logout } from "@mui/icons-material";
 import { AppBar, Box, Button, Container, Toolbar, Typography, Menu, MenuItem, Avatar } from "@mui/material";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -9,7 +9,7 @@ import { useSession, signOut } from "next-auth/react";
 import { useState } from "react";
 
 const navItems = [
-	{ href: "/", label: "Landing" },
+	{ href: "/", label: "Home" },
 	{ href: "/login", label: "Login" },
 ];
 
@@ -109,7 +109,7 @@ export default function AppHeader() {
 										</Typography>
 									</MenuItem>
 									<MenuItem onClick={handleLogout}>
-										<LogOutIcon sx={{ mr: 1 }} />
+										<Logout sx={{ mr: 1 }} />
 										Sair
 									</MenuItem>
 								</Menu>
