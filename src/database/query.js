@@ -7,9 +7,9 @@ export async function query(text, params = [], client = null) {
 		const executor = client || pool;
 
 		const duration = Date.now() - start;
-		console.log("SQL:", text, params, `${duration}ms`);
+		console.log("SQL:", text, `${duration}ms`);
 
-		return executor.query(text, params);
+		return await executor.query(text, params);
 	} catch (err) {
 		console.error("DB ERROR:", err);
 		throw err;

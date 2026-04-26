@@ -1,14 +1,14 @@
--- Usuário demo (não duplica)
-INSERT INTO users (id, name, email)   
-VALUES (1, 'Estudante Demo', 'demo@studycycle.local')
-ON CONFLICT (id) DO NOTHING;
+-- Usuário demo 
+INSERT INTO users (name, email)
+VALUES ('Estudante Demo', 'demo@studycycle.local')
+ON CONFLICT (email) DO NOTHING;
 
--- Ciclo (não duplica)
+-- Ciclo
 INSERT INTO cycles (id, name, weekly_hours, user_id)
 VALUES (1, 'Ciclo ENEM - Maio', 20, 1)
 ON CONFLICT (id) DO NOTHING;
 
--- Subjects (não duplicar por nome + ciclo)
+-- Subjects
 INSERT INTO cycle_subjects
 (cycle_id, name, affinity_rank, base_weight, extra_weight, final_weight, recommended_hours)
 VALUES

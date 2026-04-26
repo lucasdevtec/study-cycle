@@ -23,7 +23,8 @@ export const cycleSubjectRepo = {
 	},
 
 	async findByCycle(cycleId, client) {
-		return query(`SELECT * FROM cycle_subjects WHERE cycle_id = $1 ORDER BY id`, [cycleId], client);
+		const { rows } = await query(`SELECT * FROM cycle_subjects WHERE cycle_id = $1 ORDER BY id`, [cycleId], client);
+		return rows;
 	},
 
 	async deleteByCycle(cycleId, client) {

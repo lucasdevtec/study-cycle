@@ -9,7 +9,7 @@ export const userRepo = {
 			hashed = await bcrypt.hash(password, 10);
 		}
 
-		const rows = await query(
+		const { rows } = await query(
 			`INSERT INTO users (name, email, password, provider, provider_id)
        VALUES ($1, $2, $3, $4, $5)
        RETURNING *`,
@@ -21,13 +21,13 @@ export const userRepo = {
 	},
 
 	async findByEmail(email, client) {
-		const rows = await query(`SELECT * FROM users WHERE email = $1 LIMIT 1`, [email], client);
-
+		const { rows } = await query(`SELECT * FROM users WHERE email = $1 LIMIT 1`, [email], client);
+		console.log(rows);
 		return rows[0] || null;
 	},
 
 	async findById(id, client) {
-		const rows = await query(`SELECT * FROM users WHERE id = $1`, [id], client);
+		const { rows } = await query(`SELECT * FROM users WHERE id = $1`, [id], client);
 
 		return rows[0] || null;
 	},

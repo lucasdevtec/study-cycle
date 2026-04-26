@@ -2,7 +2,7 @@ import { query } from "@/database/query";
 
 export const cycleRepo = {
 	async create({ name, weeklyHours, userId }, client) {
-		const rows = await query(
+		const { rows } = await query(
 			`INSERT INTO cycles (name, weekly_hours, user_id)
        VALUES ($1, $2, $3)
        RETURNING *`,
@@ -14,11 +14,13 @@ export const cycleRepo = {
 	},
 
 	async findByUser(userId, client) {
-		return query(`SELECT * FROM cycles WHERE user_id = $1 ORDER BY created_at DESC`, [userId], client);
+		const { rows } = await query(`SELECT * FROM cycles WHERE user_id = $1 ORDER BY created_at DESC`, [userId], client);
+
+		return rows;
 	},
 
 	async findById(id, client) {
-		const rows = await query(`SELECT * FROM cycles WHERE id = $1`, [id], client);
+		const { rows } = await query(`SELECT * FROM cycles WHERE id = $1`, [id], client);
 
 		return rows[0] || null;
 	},

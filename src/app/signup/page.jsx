@@ -77,11 +77,12 @@ export default function SignupPage() {
 	return (
 		<Box
 			sx={{
-				minHeight: "100vh",
+				flex: 1,
+				display: "flex",
+				flexDirection: "column",
 				background: "linear-gradient(170deg, #f3fbf8 0%, #ffffff 60%)",
 			}}
 		>
-			<AppHeader />
 			<Container maxWidth="sm" sx={{ py: 8 }}>
 				<Card sx={{ border: "1px solid #d9ebe4" }}>
 					<CardContent sx={{ p: 4 }}>
@@ -97,34 +98,9 @@ export default function SignupPage() {
 							<form onSubmit={handleSignup}>
 								<Stack spacing={2}>
 									<TextField label="Nome" fullWidth value={name} onChange={e => setName(e.target.value)} disabled={loading} required />
-									<TextField
-										label="Email"
-										type="email"
-										fullWidth
-										value={email}
-										onChange={e => setEmail(e.target.value)}
-										disabled={loading}
-										required
-									/>
-									<TextField
-										label="Senha"
-										type="password"
-										fullWidth
-										value={password}
-										onChange={e => setPassword(e.target.value)}
-										disabled={loading}
-										required
-										helperText="Mínimo 8 caracteres"
-									/>
-									<TextField
-										label="Confirmar Senha"
-										type="password"
-										fullWidth
-										value={confirmPassword}
-										onChange={e => setConfirmPassword(e.target.value)}
-										disabled={loading}
-										required
-									/>
+									<TextField label="Email" type="email" fullWidth value={email} onChange={e => setEmail(e.target.value)} disabled={loading} required />
+									<TextField label="Senha" type="password" fullWidth value={password} onChange={e => setPassword(e.target.value)} disabled={loading} required helperText="Mínimo 8 caracteres" />
+									<TextField label="Confirmar Senha" type="password" fullWidth value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} disabled={loading} required />
 									<Button variant="contained" size="large" type="submit" disabled={loading} sx={{ position: "relative", mt: 2 }}>
 										{loading && (
 											<CircularProgress

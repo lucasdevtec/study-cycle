@@ -55,11 +55,12 @@ export default function LoginPage() {
 	return (
 		<Box
 			sx={{
-				minHeight: "100vh",
+				flex: 1,
+				display: "flex",
+				flexDirection: "column",
 				background: "linear-gradient(170deg, #f3fbf8 0%, #ffffff 60%)",
 			}}
 		>
-			<AppHeader />
 			<Container maxWidth="sm" sx={{ py: 8 }}>
 				<Card sx={{ border: "1px solid #d9ebe4" }}>
 					<CardContent sx={{ p: 4 }}>
@@ -74,24 +75,8 @@ export default function LoginPage() {
 
 							<form onSubmit={handleCredentialsLogin}>
 								<Stack spacing={2}>
-									<TextField
-										label="Email"
-										type="email"
-										fullWidth
-										value={email}
-										onChange={e => setEmail(e.target.value)}
-										disabled={loading}
-										required
-									/>
-									<TextField
-										label="Senha"
-										type="password"
-										fullWidth
-										value={password}
-										onChange={e => setPassword(e.target.value)}
-										disabled={loading}
-										required
-									/>
+									<TextField label="Email" type="email" fullWidth value={email} onChange={e => setEmail(e.target.value)} disabled={loading} required />
+									<TextField label="Senha" type="password" fullWidth value={password} onChange={e => setPassword(e.target.value)} disabled={loading} required />
 									<Button variant="contained" size="large" type="submit" disabled={loading} sx={{ position: "relative" }}>
 										{loading && (
 											<CircularProgress

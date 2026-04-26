@@ -1,6 +1,6 @@
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
-import { authService } from "@/services/authService";
+import { authService } from "@/lib/modules/auth/auth.service";
 
 export const authOptions = {
 	pages: {

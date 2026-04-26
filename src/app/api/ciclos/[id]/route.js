@@ -1,159 +1,84 @@
 import { NextResponse } from "next/server";
-import { calculateCyclePlan } from "@/lib/cycle";
-import { getDbModels } from "@/lib/db";
+import { cycleService } from "@/lib/modules/cycle/cycle.service";
+import { formatZodError } from "@/utils/zodErrors";
+import { createCycleSchema, cycleIdSchema } from "@/lib/modules/cycle/cycle.schema";
 
-async function parseId(rawParams) {
-  const params = await rawParams;
-  const id = Number(params.id);
-  return Number.isInteger(id) && id > 0 ? id : null;
+function parseId(params) {
+	const { success, data } = cycleIdSchema.safeParse(params?.id);
+	return success ? data : null;
 }
 
-async function findCycle(cycleId) {
-  const { Cycle, CycleSubject } = await getDbModels();
-  const cycle = await Cycle.findByPk(cycleId, {
-    include: [{ model: CycleSubject, as: "subjects" }],
-  });
+function handleError(err, fallbackMessage, notFoundMessage) {
+	if (err?.name === "ZodError") {
+		return NextResponse.json(
+			{
+				type: "validation",
+				errors: formatZodError(err),
+			},
+			{ status: 400 },
+		);
+	}
 
-  return cycle;
+	if (notFoundMessage && err?.message === notFoundMessage) {
+		return NextResponse.json({ message: err.message }, { status: 404 });
+	}
+
+	return NextResponse.json({ message: err?.message || fallbackMessage }, { status: 500 });
 }
 
-export async function GET(_request, { params }) {
-  try {
-    const cycleId = await parseId(params);
+export async function GET(_req, { params }) {
+	try {
+		const cycleId = parseId(params);
 
-    if (!cycleId) {
-      return NextResponse.json({ message: "ID inválido." }, { status: 400 });
-    }
+		if (!cycleId) {
+			return NextResponse.json({ message: "ID inválido" }, { status: 400 });
+		}
 
-    const cycle = await findCycle(cycleId);
+		const cycle = await cycleService.getFullCycle(cycleId);
 
-    if (!cycle) {
-      return NextResponse.json(
-        { message: "Ciclo não encontrado." },
-        { status: 404 },
-      );
-    }
-
-    return NextResponse.json(cycle.toJSON());
-  } catch (error) {
-    return NextResponse.json(
-      { message: "Erro ao buscar ciclo.", details: error.message },
-      { status: 500 },
-    );
-  }
+		return NextResponse.json(cycle);
+	} catch (err) {
+		return handleError(err, "Erro ao buscar ciclo", "Ciclo não encontrado");
+	}
 }
 
-export async function PATCH(request, { params }) {
-  try {
-    const cycleId = await parseId(params);
+export async function PATCH(req, { params }) {
+	try {
+		const cycleId = parseId(params);
 
-    if (!cycleId) {
-      return NextResponse.json({ message: "ID inválido." }, { status: 400 });
-    }
+		if (!cycleId) {
+			return NextResponse.json({ message: "ID inválido" }, { status: 400 });
+		}
 
-    const body = await request.json();
-    const name = String(body.name || "").trim();
-    const weeklyHours = Number(body.weeklyHours || 0);
-    const subjectsInput = Array.isArray(body.subjects) ? body.subjects : null;
+		const body = await req.json();
 
-    if (!name) {
-      return NextResponse.json(
-        { message: "Nome do ciclo é obrigatório." },
-        { status: 400 },
-      );
-    }
+		const parsed = createCycleSchema.partial().parse({
+			...body,
+			userId: 1, // depois vem da session
+		});
 
-    const { sequelize, Cycle, CycleSubject } = await getDbModels();
-    const cycle = await Cycle.findByPk(cycleId);
+		const updated = await cycleService.updateCycle(cycleId, parsed);
 
-    if (!cycle) {
-      return NextResponse.json(
-        { message: "Ciclo não encontrado." },
-        { status: 404 },
-      );
-    }
-
-    await sequelize.transaction(async (transaction) => {
-      cycle.name = name;
-
-      if (Number.isFinite(weeklyHours) && weeklyHours > 0) {
-        cycle.weeklyHours = weeklyHours;
-      }
-
-      await cycle.save({ transaction });
-
-      if (subjectsInput) {
-        const subjects = subjectsInput
-          .map((subject) => ({
-            name: String(subject.name || "").trim(),
-            affinityRank: Number(subject.affinityRank || 3),
-            extraWeight: Number(subject.extraWeight || 0),
-          }))
-          .filter((subject) => subject.name);
-
-        if (!subjects.length) {
-          throw new Error("Informe ao menos uma matéria válida.");
-        }
-
-        const plan = calculateCyclePlan({
-          subjects,
-          weeklyHours: cycle.weeklyHours,
-        });
-
-        await CycleSubject.destroy({
-          where: { cycleId: cycle.id },
-          transaction,
-        });
-
-        await CycleSubject.bulkCreate(
-          plan.subjects.map((subject) => ({
-            cycleId: cycle.id,
-            name: subject.name,
-            affinityRank: subject.affinityRank,
-            baseWeight: subject.baseWeight,
-            extraWeight: subject.extraWeight,
-            finalWeight: subject.finalWeight,
-            recommendedHours: subject.recommendedHours,
-          })),
-          { transaction },
-        );
-      }
-    });
-
-    return NextResponse.json({ message: "Ciclo atualizado com sucesso." });
-  } catch (error) {
-    return NextResponse.json(
-      { message: "Erro ao atualizar ciclo.", details: error.message },
-      { status: 500 },
-    );
-  }
+		return NextResponse.json(updated);
+	} catch (err) {
+		return handleError(err, "Erro ao atualizar ciclo");
+	}
 }
 
-export async function DELETE(_request, { params }) {
-  try {
-    const cycleId = await parseId(params);
+export async function DELETE(_req, { params }) {
+	try {
+		const cycleId = parseId(params);
 
-    if (!cycleId) {
-      return NextResponse.json({ message: "ID inválido." }, { status: 400 });
-    }
+		if (!cycleId) {
+			return NextResponse.json({ message: "ID inválido" }, { status: 400 });
+		}
 
-    const { Cycle } = await getDbModels();
-    const cycle = await Cycle.findByPk(cycleId);
+		await cycleService.deleteCycle(cycleId);
 
-    if (!cycle) {
-      return NextResponse.json(
-        { message: "Ciclo não encontrado." },
-        { status: 404 },
-      );
-    }
-
-    await cycle.destroy();
-
-    return NextResponse.json({ message: "Ciclo removido com sucesso." });
-  } catch (error) {
-    return NextResponse.json(
-      { message: "Erro ao remover ciclo.", details: error.message },
-      { status: 500 },
-    );
-  }
+		return NextResponse.json({
+			message: "Ciclo removido com sucesso",
+		});
+	} catch (err) {
+		return handleError(err, "Erro ao remover ciclo");
+	}
 }
