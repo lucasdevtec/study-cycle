@@ -1,16 +1,14 @@
 import { query } from "@/database/query";
 
 export const cycleSubjectRepo = {
-	async createMany(cycleId, subjects) {
+	async createMany(cycleId, subjects, client) {
 		const values = [];
 		const params = [];
 
 		subjects.forEach((s, i) => {
-			const baseIndex = i * 7;
+			const base = i * 7;
 
-			values.push(
-				`($${baseIndex + 1}, $${baseIndex + 2}, $${baseIndex + 3}, $${baseIndex + 4}, $${baseIndex + 5}, $${baseIndex + 6}, $${baseIndex + 7})`,
-			);
+			values.push(`($${base + 1}, $${base + 2}, $${base + 3}, $${base + 4}, $${base + 5}, $${base + 6}, $${base + 7})`);
 
 			params.push(cycleId, s.name, s.affinityRank, s.baseWeight, s.extraWeight, s.finalWeight, s.recommendedHours);
 		});
@@ -20,12 +18,15 @@ export const cycleSubjectRepo = {
        (cycle_id, name, affinity_rank, base_weight, extra_weight, final_weight, recommended_hours)
        VALUES ${values.join(",")}`,
 			params,
+			client,
 		);
 	},
 
-	async findByCycle(cycleId) {
-		const { rows } = await query(`SELECT * FROM cycle_subjects WHERE cycle_id = $1`, [cycleId]);
+	async findByCycle(cycleId, client) {
+		return query(`SELECT * FROM cycle_subjects WHERE cycle_id = $1 ORDER BY id`, [cycleId], client);
+	},
 
-		return rows;
+	async deleteByCycle(cycleId, client) {
+		await query(`DELETE FROM cycle_subjects WHERE cycle_id = $1`, [cycleId], client);
 	},
 };

@@ -17,16 +17,3 @@ export async function withTransaction(fn) {
 		client.release();
 	}
 }
-
-/**
- * Executes a function within a database transaction.
- * @param {Function} fn - The function to execute within the transaction.
- * @returns {Promise<*>} - The result of the function execution.
- * @throws {Error} - If the transaction fails, the error is thrown.
-import { withTransaction } from "@/database/transaction";
-
-await withTransaction(async (client) => {
-	await client.query(...);
-	await client.query(...);
-});
-*/

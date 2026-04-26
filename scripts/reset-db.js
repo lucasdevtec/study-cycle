@@ -17,7 +17,6 @@ async function run() {
 
 		console.log("🗑️ Banco limpo");
 
-		// roda scripts como CLI (correto)
 		execSync("node scripts/init-db.js", { stdio: "inherit" });
 		execSync("node scripts/seed-db.js", { stdio: "inherit" });
 

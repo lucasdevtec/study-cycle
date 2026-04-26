@@ -1,15 +1,15 @@
 import pool from "./db.js";
 
-export async function query(text, params = []) {
+export async function query(text, params = [], client = null) {
 	const start = Date.now();
 
 	try {
-		const res = await pool.query(text, params);
+		const executor = client || pool;
 
 		const duration = Date.now() - start;
 		console.log("SQL:", text, params, `${duration}ms`);
 
-		return res;
+		return executor.query(text, params);
 	} catch (err) {
 		console.error("DB ERROR:", err);
 		throw err;
