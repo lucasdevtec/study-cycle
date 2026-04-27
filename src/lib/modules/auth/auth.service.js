@@ -4,40 +4,6 @@ import { withTransaction } from "@/database/transaction";
 import { loginSchema, registerSchema, googleLoginSchema } from "@/lib/modules/auth/auth.schema";
 
 export const authService = {
-	async login(data) {
-		const { email, password } = loginSchema.parse(data);
-
-		const user = await userRepo.findByEmail(email);
-
-		if (!user || !user.password) {
-			throw new Error("Credenciais inválidas");
-		}
-
-		const ok = await bcrypt.compare(password, user.password);
-
-		if (!ok) {
-			throw new Error("Credenciais inválidas");
-		}
-
-		return this._safe(user);
-	},
-
-	async register(data) {
-		const parsed = registerSchema.parse(data);
-
-		return withTransaction(async client => {
-			const existing = await userRepo.findByEmail(parsed.email, client);
-
-			if (existing) {
-				throw new Error("Email já cadastrado");
-			}
-
-			const user = await userRepo.create(parsed, client);
-
-			return this._safe(user);
-		});
-	},
-
 	async loginWithGoogle(data) {
 		const { email, name, providerId } = googleLoginSchema.parse(data);
 
@@ -45,17 +11,68 @@ export const authService = {
 			let user = await userRepo.findByEmail(email, client);
 
 			if (!user) {
-				user = await userRepo.create(
+				user = await userRepo.create(name, email, client);
+			}
+
+			const existingAccount = await userRepo.findAccount(user.id, "google", client);
+
+			if (!existingAccount) {
+				await userRepo.createAccount(
 					{
-						name: name || "Google User",
-						email,
-						password: null,
+						userId: user.id,
+						type: "oauth",
 						provider: "google",
-						provider_id: providerId,
+						providerAccountId: providerId,
+						passwordHash: null,
 					},
 					client,
 				);
 			}
+
+			return this._safe(user);
+		});
+	},
+
+	async login(data) {
+		const { email, password } = loginSchema.parse(data);
+
+		const user = await userRepo.findByEmail(email);
+		if (!user) throw new Error("Credenciais inválidas");
+
+		const account = await userRepo.findAccount(user.id, "credentials");
+
+		if (!account || !account.password_hash) {
+			throw new Error("Esta conta utiliza login social. Entre com o Google.");
+		}
+
+		const ok = await bcrypt.compare(password, account.password_hash);
+		if (!ok) throw new Error("Credenciais inválidas");
+
+		return this._safe(user);
+	},
+
+	async register(data) {
+		const { name, email, password } = registerSchema.parse(data);
+
+		return withTransaction(async client => {
+			const existing = await userRepo.findByEmail(email, client);
+			if (existing) {
+				throw new Error("Email já cadastrado");
+			}
+
+			const user = await userRepo.create(name, email, client);
+			const hashedPassword = await bcrypt.hash(password, 10);
+
+			await userRepo.createAccount(
+				{
+					userId: user.id,
+					type: "credentials",
+					provider: "credentials",
+					providerAccountId: user.id.toString(),
+					passwordHash: hashedPassword,
+				},
+				client,
+			);
 
 			return this._safe(user);
 		});
