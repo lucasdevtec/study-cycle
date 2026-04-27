@@ -32,14 +32,14 @@ export default function AppFooter() {
 							</Typography>
 						</Box>
 						<Typography color="text.secondary" sx={{ lineHeight: 1.7 }}>
-							Planeje com criterio, distribua suas horas com clareza e mantenha o estudo em movimento sem perder continuidade.
+							Planeje com critério, distribua suas horas com clareza e mantenha o estudo em movimento sem perder continuidade.
 						</Typography>
 					</Stack>
 
 					<Stack direction={{ xs: "column", sm: "row" }} spacing={{ xs: 3, sm: 6 }}>
 						<Stack spacing={1}>
 							<Typography variant="overline" color="text.secondary">
-								Navegacao
+								Navegação
 							</Typography>
 							{footerLinks.map(link => (
 								<MuiLink key={link.href} component={Link} href={link.href} underline="hover" color="text.primary" sx={{ fontWeight: 500 }}>
@@ -50,16 +50,16 @@ export default function AppFooter() {
 
 						<Stack spacing={1}>
 							<Typography variant="overline" color="text.secondary">
-								Metodo
+								Método
 							</Typography>
 							<Typography variant="body2" color="text.secondary">
 								Afinidade para revelar gargalos.
 							</Typography>
 							<Typography variant="body2" color="text.secondary">
-								Peso estrategico para priorizar melhor.
+								Peso estratégico para priorizar melhor.
 							</Typography>
 							<Typography variant="body2" color="text.secondary">
-								Ciclos flexiveis para retomar sem friccao.
+								Ciclos flexíveis para retomar sem fricção.
 							</Typography>
 						</Stack>
 					</Stack>
@@ -69,10 +69,10 @@ export default function AppFooter() {
 
 				<Stack direction={{ xs: "column", sm: "row" }} spacing={1.5} sx={{ justifyContent: "space-between" }}>
 					<Typography variant="body2" color="text.secondary">
-						© {currentYear} StudyCycle. Rotina de estudo com foco e consistencia.
+						© {currentYear} StudyCycle. Rotina de estudo com foco e consistência.
 					</Typography>
 					<Typography variant="body2" color="text.secondary">
-						Feito para quem precisa evoluir sem depender de horarios engessados.
+						Feito para quem precisa evoluir sem depender de horários engessados.
 					</Typography>
 				</Stack>
 			</Container>
