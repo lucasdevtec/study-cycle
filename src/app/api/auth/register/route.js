@@ -1,30 +1,23 @@
-import bcrypt from "bcryptjs";
-
-import { findUserByEmail, createUser } from "@/database/repositories/authRepo";
+import { authService } from "@/lib/modules/auth/auth.service";
 
 export async function POST(req) {
 	try {
-		const { name, email, password } = await req.json();
+		const body = await req.json();
 
-		if (!name || !email || !password) {
-			return Response.json({ message: "Nome, email e senha são obrigatórios" }, { status: 400 });
-		}
+		const user = await authService.register(body);
 
-		if (password.length < 8) {
-			return Response.json({ message: "Senha deve ter no mínimo 8 caracteres" }, { status: 400 });
-		}
-
-		const existing = await findUserByEmail(email);
-		if (existing) {
-			return Response.json({ message: "Email já cadastrado" }, { status: 400 });
-		}
-
-		const hashed = await bcrypt.hash(password, 10);
-		const user = await createUser({ name, email, password: hashed });
-
-		return Response.json({ user }, { status: 201 });
+		return Response.json({ message: "Usuário criado com sucesso", user }, { status: 201 });
 	} catch (err) {
+		if (err.name === "ZodError") {
+			const message = err.errors[0]?.message || "Dados inválidos";
+			return Response.json({ message }, { status: 400 });
+		}
+
+		if (err.message === "Email já cadastrado") {
+			return Response.json({ message: err.message }, { status: 409 });
+		}
+
 		console.error("Registration error:", err);
-		return Response.json({ message: "Erro ao criar usuário" }, { status: 500 });
+		return Response.json({ message: "Erro interno ao criar usuário" }, { status: 500 });
 	}
 }

@@ -5,7 +5,6 @@ import { Box, Button, Card, CardContent, Container, Stack, TextField, Typography
 import { Google as GoogleIcon, LockOutlined } from "@mui/icons-material";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
-import AppHeader from "@/components/layout/AppHeader";
 
 export default function LoginPage() {
 	const router = useRouter();
@@ -16,7 +15,6 @@ export default function LoginPage() {
 	const [error, setError] = useState("");
 
 	const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
-	const credentialsError = searchParams.get("error");
 
 	const handleCredentialsLogin = async e => {
 		e.preventDefault();
@@ -31,7 +29,11 @@ export default function LoginPage() {
 			});
 
 			if (result?.error) {
-				setError(result.error);
+				if (result.error === "CredentialsSignin") {
+					setError("Email ou senha inválidos!");
+				} else {
+					setError(result.error);
+				}
 			} else if (result?.ok) {
 				router.push(callbackUrl);
 			}
@@ -71,7 +73,6 @@ export default function LoginPage() {
 							</Stack>
 
 							{error && <Alert severity="error">{error}</Alert>}
-							{credentialsError && <Alert severity="error">Erro de autenticação. Verifique suas credenciais.</Alert>}
 
 							<form onSubmit={handleCredentialsLogin}>
 								<Stack spacing={2}>
@@ -100,7 +101,7 @@ export default function LoginPage() {
 							</Button>
 
 							<Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-								Não tem conta?{" "}
+								Não tem conta?
 								<Button variant="text" size="small" href="/signup" sx={{ textTransform: "none" }}>
 									Registre-se
 								</Button>
