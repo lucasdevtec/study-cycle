@@ -1,0 +1,561 @@
+openapi: 3.0.3
+info:
+  title: StudyCycle API
+  version: 1.0.0
+  description: |
+    API do StudyCycle para autenticação, recuperação de senha e gerenciamento de ciclos de estudo.
+servers:
+  - url: http://localhost:3000
+    description: Ambiente local
+
+tags:
+  - name: Auth
+    description: Cadastro e recuperação de senha
+  - name: Ciclos
+    description: Operações de ciclo e progresso
+
+paths:
+  /api/auth/register:
+    post:
+      tags: [Auth]
+      summary: Cadastrar novo usuário
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+      responses:
+        "201":
+          description: Usuário criado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegisterResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "409":
+          $ref: "#/components/responses/ConflictError"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/auth/forgot-password:
+    post:
+      tags: [Auth]
+      summary: Solicitar reset de senha por e-mail
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ForgotPasswordRequest"
+      responses:
+        "200":
+          description: Solicitação processada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Se existir uma conta com este email, enviaremos um link para redefinir sua senha.
+                required: [message]
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/auth/reset-password:
+    post:
+      tags: [Auth]
+      summary: Redefinir senha com token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResetPasswordRequest"
+      responses:
+        "200":
+          description: Senha redefinida
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Senha redefinida com sucesso.
+                required: [message]
+        "400":
+          description: Token inválido/expirado ou validação
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/ErrorMessage"
+                  - $ref: "#/components/schemas/ValidationErrorBody"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/ciclos:
+    post:
+      tags: [Ciclos]
+      summary: Criar ciclo
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCycleRequest"
+      responses:
+        "201":
+          description: Ciclo criado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 12
+                required: [id]
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/ciclos/{id}:
+    get:
+      tags: [Ciclos]
+      summary: Buscar ciclo completo
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: "#/components/parameters/CycleIdParam"
+      responses:
+        "200":
+          description: Ciclo encontrado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CycleFull"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          $ref: "#/components/responses/ForbiddenError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+    put:
+      tags: [Ciclos]
+      summary: Editar ciclo (reinicia progresso atual)
+      description: |
+        Atualiza dados do ciclo e matérias. A regra de negócio atual reinicia o progresso do ciclo atual:
+        - atual_cycle_hours = 0
+        - cycle_done = false
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: "#/components/parameters/CycleIdParam"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCycleRequest"
+      responses:
+        "200":
+          description: Ciclo atualizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CycleFull"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          $ref: "#/components/responses/ForbiddenError"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+    patch:
+      tags: [Ciclos]
+      summary: Atualizar horas de matéria no ciclo
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: "#/components/parameters/CycleIdParam"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateSubjectHoursRequest"
+      responses:
+        "200":
+          description: Progresso atualizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UpdateSubjectHoursResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          $ref: "#/components/responses/ForbiddenError"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+    delete:
+      tags: [Ciclos]
+      summary: Excluir ciclo
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: "#/components/parameters/CycleIdParam"
+      responses:
+        "200":
+          description: Ciclo removido
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Ciclo removido com sucesso
+                required: [message]
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          $ref: "#/components/responses/ForbiddenError"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /api/ciclos/{id}/restart:
+    post:
+      tags: [Ciclos]
+      summary: Reiniciar progresso do ciclo
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: "#/components/parameters/CycleIdParam"
+      responses:
+        "200":
+          description: Ciclo reiniciado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cycle:
+                    $ref: "#/components/schemas/Cycle"
+                  subjects:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/CycleSubject"
+                required: [cycle, subjects]
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          $ref: "#/components/responses/ForbiddenError"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: next-auth.session-token
+
+  parameters:
+    CycleIdParam:
+      name: id
+      in: path
+      required: true
+      description: ID do ciclo
+      schema:
+        type: integer
+        minimum: 1
+
+  responses:
+    ValidationError:
+      description: Erro de validação
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ValidationErrorBody"
+    UnauthorizedError:
+      description: Não autenticado
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorMessage"
+          example:
+            message: Unauthorized
+    ForbiddenError:
+      description: Acesso negado
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorMessage"
+          example:
+            message: Acesso negado
+    NotFoundError:
+      description: Recurso não encontrado
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorMessage"
+    ConflictError:
+      description: Conflito de dados
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorMessage"
+    InternalError:
+      description: Erro interno
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorMessage"
+
+  schemas:
+    RegisterRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+      required: [name, email, password]
+
+    RegisterResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Usuário criado com sucesso
+        user:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 1
+            name:
+              type: string
+              example: Lucas
+            email:
+              type: string
+              format: email
+              example: lucas@email.com
+          required: [id, name, email]
+      required: [message, user]
+
+    ForgotPasswordRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+      required: [email]
+
+    ResetPasswordRequest:
+      type: object
+      properties:
+        token:
+          type: string
+        password:
+          type: string
+          minLength: 8
+      required: [token, password]
+
+    CreateCycleSubjectRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        affinityRank:
+          type: integer
+          minimum: 1
+          maximum: 5
+        extraWeight:
+          type: integer
+          minimum: 0
+      required: [name, affinityRank]
+
+    CreateCycleRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        weeklyHours:
+          type: integer
+          minimum: 1
+        subjects:
+          type: array
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/CreateCycleSubjectRequest"
+      required: [name, weeklyHours, subjects]
+
+    UpdateCycleRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        weeklyHours:
+          type: integer
+          minimum: 1
+        subjects:
+          type: array
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/CreateCycleSubjectRequest"
+
+    UpdateSubjectHoursRequest:
+      type: object
+      properties:
+        subjectId:
+          type: integer
+          minimum: 1
+        hoursDone:
+          type: integer
+          minimum: 0
+      required: [subjectId, hoursDone]
+
+    Cycle:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        weeklyHours:
+          type: integer
+        totalHoursDone:
+          type: integer
+        totalCycleDone:
+          type: integer
+        atualCycleHours:
+          type: integer
+        plannedHours:
+          type: integer
+        cycleDone:
+          type: boolean
+        userId:
+          type: integer
+      required:
+        - id
+        - name
+        - weeklyHours
+        - totalHoursDone
+        - totalCycleDone
+        - atualCycleHours
+        - plannedHours
+        - cycleDone
+        - userId
+
+    CycleSubject:
+      type: object
+      properties:
+        id:
+          type: integer
+        cycleId:
+          type: integer
+        name:
+          type: string
+        affinityRank:
+          type: integer
+        baseWeight:
+          type: integer
+        extraWeight:
+          type: integer
+        finalWeight:
+          type: integer
+        recommendedHours:
+          type: integer
+        hoursDone:
+          type: integer
+      required:
+        - id
+        - cycleId
+        - name
+        - affinityRank
+        - baseWeight
+        - extraWeight
+        - finalWeight
+        - recommendedHours
+        - hoursDone
+
+    CycleFull:
+      allOf:
+        - $ref: "#/components/schemas/Cycle"
+        - type: object
+          properties:
+            subjects:
+              type: array
+              items:
+                $ref: "#/components/schemas/CycleSubject"
+          required: [subjects]
+
+    UpdateSubjectHoursResponse:
+      type: object
+      properties:
+        cycle:
+          $ref: "#/components/schemas/Cycle"
+        subjects:
+          type: array
+          items:
+            $ref: "#/components/schemas/CycleSubject"
+        cycleJustCompleted:
+          type: boolean
+        allSubjectsCompleted:
+          type: boolean
+      required: [cycle, subjects, cycleJustCompleted, allSubjectsCompleted]
+
+    ValidationErrorBody:
+      type: object
+      properties:
+        type:
+          type: string
+          example: validation
+        errors:
+          type: object
+          additionalProperties:
+            type: string
+          example:
+            email: Email inválido
+      required: [type, errors]
+
+    ErrorMessage:
+      type: object
+      properties:
+        message:
+          type: string
+      required: [message]
