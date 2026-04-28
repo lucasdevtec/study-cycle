@@ -1,19 +1,20 @@
 import { query } from "@/database/query";
+import { snakeToCamel } from "@/utils/snakeToCamelCase";
 
 export const userRepo = {
 	async findByEmail(email, client) {
 		const { rows } = await query(`SELECT * FROM users WHERE email = $1 LIMIT 1`, [email], client);
-		return rows[0] || null;
+		return rows[0] ? snakeToCamel(rows[0]) : null;
 	},
 
 	async findAccount(userId, provider, client) {
 		const { rows } = await query(`SELECT * FROM accounts WHERE user_id = $1 AND provider = $2`, [userId, provider], client);
-		return rows[0] || null;
+		return rows[0] ? snakeToCamel(rows[0]) : null;
 	},
 
 	async create(name, email, client) {
 		const { rows } = await query(`INSERT INTO users (name, email) VALUES ($1, $2) RETURNING *`, [name, email], client);
-		return rows[0];
+		return rows[0] ? snakeToCamel(rows[0]) : null;
 	},
 
 	async createAccount({ userId, type, provider, providerAccountId, passwordHash }, client) {
@@ -24,16 +25,17 @@ export const userRepo = {
 			[userId, type, provider, providerAccountId, passwordHash || null],
 			client,
 		);
-		return rows[0];
+		return rows[0] ? snakeToCamel(rows[0]) : null;
 	},
 
 	async findById(id, client) {
 		const { rows } = await query(`SELECT * FROM users WHERE id = $1`, [id], client);
 
-		return rows[0] || null;
+		return rows[0] ? snakeToCamel(rows[0]) : null;
 	},
 
 	async findAll(client) {
-		return query(`SELECT id, name, email FROM users`, [], client);
+		const { rows } = await query(`SELECT id, name, email FROM users`, [], client);
+		return snakeToCamel(rows);
 	},
 };
