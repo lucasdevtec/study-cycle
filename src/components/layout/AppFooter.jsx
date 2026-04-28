@@ -9,6 +9,8 @@ const footerLinks = [
 	{ href: "/dashboard", label: "Dashboard" },
 	{ href: "/ciclo/criar", label: "Criar ciclo" },
 	{ href: "/login", label: "Entrar" },
+	{ href: "/ajuda", label: "Ajuda" },
+	{ href: "/privacidade", label: "Privacidade" },
 ];
 
 export default function AppFooter() {
