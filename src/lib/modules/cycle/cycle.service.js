@@ -110,7 +110,7 @@ export const cycleService = {
 			const currentSubjects = await cycleSubjectRepo.findByCycle(parsedId, client);
 			const nextSubjectsInput = parsed.subjects ?? currentSubjects;
 
-			const { subjects: calculatedSubjects } = calculateCyclePlan({
+			const { totalPlannedHours, subjects: calculatedSubjects } = calculateCyclePlan({
 				subjects: nextSubjectsInput,
 				weeklyHours: nextWeeklyHours,
 			});
@@ -120,6 +120,7 @@ export const cycleService = {
 				{
 					name: nextName,
 					weeklyHours: nextWeeklyHours,
+					plannedHours: totalPlannedHours,
 				},
 				client,
 			);

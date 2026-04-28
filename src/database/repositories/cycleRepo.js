@@ -30,15 +30,18 @@ export const cycleRepo = {
 		return rows[0] ? snakeToCamel(rows[0]) : null;
 	},
 
-	async update(id, { name, weeklyHours }, client) {
+	async update(id, { name, weeklyHours, plannedHours }, client) {
 		const { rows } = await query(
 			`UPDATE cycles
        SET name = $1,
            weekly_hours = $2,
-           updated_at = NOW()
-       WHERE id = $3
+		   planned_hours = $3,
+		   atual_cycle_hours = 0,
+		   cycle_done = false,
+		   updated_at = NOW()
+	   WHERE id = $4
        RETURNING *`,
-			[name, weeklyHours, id],
+			[name, weeklyHours, plannedHours, id],
 			client,
 		);
 

@@ -30,7 +30,7 @@ export default function AppHeader() {
 
 	function isActivePath(href) {
 		if (href === "/ciclo/criar") {
-			return pathname.startsWith("/ciclo");
+			return pathname.startsWith("/ciclo/criar");
 		}
 		return pathname === href;
 	}

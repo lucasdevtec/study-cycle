@@ -169,7 +169,7 @@ export function Cycle({ cycle, error = "" }) {
 															{subjectDone}/{subject.recommendedHours}h
 														</Typography>
 													</Stack>
-													<Stack direction="row" spacing={0.25} sx={{ flexWrap: "wrap", mt: 1 }}>
+													<Stack direction="row" sx={{ flexWrap: "wrap", mt: 1, gap: 0.5 }}>
 														{Array.from({ length: subject.recommendedHours }).map((_, hourIndex) => {
 															const checked = hourIndex < subjectDone;
 
@@ -181,8 +181,6 @@ export function Cycle({ cycle, error = "" }) {
 																		alignItems: "center",
 																		border: theme => `1px solid ${theme.palette.divider}`,
 																		borderRadius: 1,
-																		mr: 0.5,
-																		mb: 0.75,
 																		bgcolor: checked ? "action.selected" : "transparent",
 																	}}
 																>

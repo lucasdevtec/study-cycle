@@ -7,14 +7,16 @@ import { useRouter } from "next/navigation";
 import { affinityOptions, calculateCyclePlan } from "@/lib/cycle";
 import { DeleteOutlined } from "@mui/icons-material";
 
-export default function CreateCyclePage() {
+export function EditCycle({ cycle }) {
 	const router = useRouter();
-	const [cycleName, setCycleName] = useState("");
+	const [cycleName, setCycleName] = useState(cycle?.name);
 	const [isSaving, setIsSaving] = useState(false);
+	const [isDeleting, setIsDeleting] = useState(false);
 	const [feedback, setFeedback] = useState({ type: "", message: "" });
-	const [weeklyHours, setWeeklyHours] = useState(32);
+	const [weeklyHours, setWeeklyHours] = useState(cycle?.weeklyHours);
+	const cycleId = cycle?.id;
 
-	const [subjects, setSubjects] = useState([{ id: "1", name: "", affinityRank: 1, extraWeight: 0 }]);
+	const [subjects, setSubjects] = useState(cycle?.subjects);
 
 	const plan = useMemo(() => calculateCyclePlan({ subjects, weeklyHours }), [subjects, weeklyHours]);
 
@@ -24,7 +26,6 @@ export default function CreateCyclePage() {
 				if (itemIndex !== index) {
 					return subject;
 				}
-
 				return { ...subject, ...patch };
 			}),
 		);
@@ -46,9 +47,13 @@ export default function CreateCyclePage() {
 		setSubjects(current => current.filter((_, itemIndex) => itemIndex !== index));
 	}
 
-	async function saveCycle() {
+	async function saveCycleChanges() {
 		try {
 			setIsSaving(true);
+			if (!cycleId) {
+				throw new Error("ID do ciclo inválido.");
+			}
+
 			const cleanedSubjects = subjects
 				.map(({ id, ...subject }) => ({
 					...subject,
@@ -69,8 +74,8 @@ export default function CreateCyclePage() {
 
 			setFeedback({ type: "", message: "" });
 
-			const response = await fetch("/api/ciclos", {
-				method: "POST",
+			const response = await fetch(`/api/ciclos/${cycleId}`, {
+				method: "PUT",
 				headers: {
 					"Content-Type": "application/json",
 				},
@@ -87,7 +92,7 @@ export default function CreateCyclePage() {
 				throw new Error(data.message || "Falha ao salvar ciclo.");
 			}
 
-			router.push(`/ciclo/${data.id}`);
+			router.push(`/ciclo/${cycleId}`);
 		} catch (error) {
 			setFeedback({ type: "error", message: error.message });
 		} finally {
@@ -95,11 +100,38 @@ export default function CreateCyclePage() {
 		}
 	}
 
+	async function removeCycle() {
+		try {
+			if (!cycleId) {
+				throw new Error("ID do ciclo inválido.");
+			}
+
+			setIsDeleting(true);
+			setFeedback({ type: "", message: "" });
+
+			const response = await fetch(`/api/ciclos/${cycleId}`, {
+				method: "DELETE",
+			});
+
+			const data = await response.json();
+
+			if (!response.ok) {
+				throw new Error(data?.message || "Falha ao excluir ciclo.");
+			}
+
+			router.push("/dashboard");
+		} catch (error) {
+			setFeedback({ type: "error", message: error.message });
+		} finally {
+			setIsDeleting(false);
+		}
+	}
+
 	return (
 		<Box sx={{ flex: 1, display: "flex", flexDirection: "column", backgroundColor: "background.default" }}>
 			<Container maxWidth="lg" sx={{ py: 6 }}>
 				<Stack spacing={1} sx={{ mb: 4 }}>
-					<Typography variant="h3">Criar ciclo</Typography>
+					<Typography variant="h3">Editar ciclo</Typography>
 					<Typography color="text.secondary">Informe as matérias, afinidade e pesos extras. O sistema distribui o tempo de forma proporcional e garante mínimo de 2h por matéria.</Typography>
 				</Stack>
 
@@ -164,8 +196,12 @@ export default function CreateCyclePage() {
 											Adicionar matéria
 										</Button>
 
-										<Button variant="contained" onClick={saveCycle} disabled={isSaving}>
+										<Button variant="contained" onClick={saveCycleChanges} disabled={isSaving || isDeleting}>
 											{isSaving ? "Salvando..." : "Salvar ciclo"}
+										</Button>
+
+										<Button variant="outlined" color="error" onClick={removeCycle} disabled={isSaving || isDeleting}>
+											{isDeleting ? "Excluindo..." : "Excluir ciclo"}
 										</Button>
 									</Stack>
 								</Stack>
