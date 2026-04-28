@@ -97,6 +97,18 @@ Acesse `http://localhost:3000`
 3. Autorize o acesso
 4. Se for a primeira vez, será criada uma conta automaticamente
 
+### Recuperação de Senha
+
+1. Acesse `/forgot-password`
+2. Informe seu email
+3. Você receberá um link por email (Resend)
+4. Acesse o link (`/reset-password?token=...`) e defina a nova senha
+
+Variáveis necessárias para email:
+
+- `RESEND_API_KEY`
+- `RESEND_FROM` (opcional)
+
 ## Proteção de Rotas
 
 As seguintes rotas requerem autenticação:

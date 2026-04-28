@@ -1,4 +1,5 @@
 import { authService } from "@/lib/modules/auth/auth.service";
+import HandleError from "@/utils/handleErrors";
 
 export async function POST(req) {
 	try {
@@ -8,16 +9,6 @@ export async function POST(req) {
 
 		return Response.json({ message: "Usuário criado com sucesso", user }, { status: 201 });
 	} catch (err) {
-		if (err.name === "ZodError") {
-			const message = err.errors[0]?.message || "Dados inválidos";
-			return Response.json({ message }, { status: 400 });
-		}
-
-		if (err.message === "Email já cadastrado") {
-			return Response.json({ message: err.message }, { status: 409 });
-		}
-
-		console.error("Registration error:", err);
-		return Response.json({ message: "Erro interno ao criar usuário" }, { status: 500 });
+		return HandleError(err, "Erro interno ao criar usuário");
 	}
 }

@@ -53,4 +53,18 @@ export const userRepo = {
 
 		return rows[0] ? snakeToCamel(rows[0]) : null;
 	},
+
+	async updateCredentialsPassword(userId, passwordHash, client) {
+		const { rows } = await query(
+			`UPDATE accounts
+       SET password_hash = $1
+       WHERE user_id = $2
+         AND provider = 'credentials'
+       RETURNING *`,
+			[passwordHash, userId],
+			client,
+		);
+
+		return rows[0] ? snakeToCamel(rows[0]) : null;
+	},
 };

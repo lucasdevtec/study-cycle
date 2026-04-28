@@ -78,6 +78,9 @@ export default function LoginPage() {
 								<Stack spacing={2}>
 									<TextField label="Email" type="email" fullWidth value={email} onChange={e => setEmail(e.target.value)} disabled={loading} required />
 									<TextField label="Senha" type="password" fullWidth value={password} onChange={e => setPassword(e.target.value)} disabled={loading} required />
+									<Button variant="text" size="small" href="/forgot-password" sx={{ alignSelf: "flex-end", textTransform: "none", p: 0 }} disabled={loading}>
+										Esqueci minha senha
+									</Button>
 									<Button variant="contained" size="large" type="submit" disabled={loading} sx={{ position: "relative" }}>
 										{loading && (
 											<CircularProgress

@@ -5,24 +5,15 @@ import { cycleService } from "@/lib/modules/cycle/cycle.service";
 import { createCycleSchema, idSchema } from "@/lib/modules/cycle/cycle.schema";
 import HandleError from "@/utils/handleErrors";
 
-function parseId(params) {
-	const { success, data } = idSchema.safeParse(params?.id);
-	return success ? data : null;
-}
-
 export async function GET({ params }) {
 	try {
 		const session = await getServerSession(authOptions);
 
 		if (!session?.user?.id) {
-			return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+			throw new Error("Unauthorized");
 		}
 
-		const cycleId = parseId(await params);
-
-		if (!cycleId) {
-			return NextResponse.json({ message: "ID inválido" }, { status: 400 });
-		}
+		const cycleId = idSchema.parse((await params)?.id);
 
 		const cycle = await cycleService.getFullCycle(cycleId, Number(session.user.id));
 
@@ -37,14 +28,10 @@ export async function PUT(req, { params }) {
 		const session = await getServerSession(authOptions);
 
 		if (!session?.user?.id) {
-			return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+			throw new Error("Unauthorized");
 		}
 
-		const cycleId = parseId(await params);
-
-		if (!cycleId) {
-			return NextResponse.json({ message: "ID inválido" }, { status: 400 });
-		}
+		const cycleId = idSchema.parse((await params)?.id);
 
 		const body = await req.json();
 
@@ -66,14 +53,10 @@ export async function DELETE(req, { params }) {
 		const session = await getServerSession(authOptions);
 
 		if (!session?.user?.id) {
-			return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+			throw new Error("Unauthorized");
 		}
 
-		const cycleId = parseId(await params);
-
-		if (!cycleId) {
-			return NextResponse.json({ message: "ID inválido" }, { status: 400 });
-		}
+		const cycleId = idSchema.parse((await params)?.id);
 
 		await cycleService.getFullCycle(cycleId, Number(session.user.id));
 
@@ -92,14 +75,10 @@ export async function PATCH(req, { params }) {
 		const session = await getServerSession(authOptions);
 
 		if (!session?.user?.id) {
-			return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+			throw new Error("Unauthorized");
 		}
 
-		const cycleId = parseId(await params);
-
-		if (!cycleId) {
-			return NextResponse.json({ message: "ID inválido" }, { status: 400 });
-		}
+		const cycleId = idSchema.parse((await params)?.id);
 
 		const body = await req.json();
 
