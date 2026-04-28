@@ -1,10 +1,10 @@
 import { z } from "zod";
 
-export const userIdSchema = z.number().int().positive();
+export const idSchema = z.coerce.number().int().positive();
 
 export const userBaseSchema = z.object({
 	name: z.string().min(1, "Nome obrigatório"),
-	email: z.string().email("Email inválido"),
+	email: z.email("Email inválido"),
 });
 
 export const createUserSchema = userBaseSchema.extend({
@@ -12,5 +12,5 @@ export const createUserSchema = userBaseSchema.extend({
 });
 
 export const userResponseSchema = userBaseSchema.extend({
-	id: userIdSchema,
+	id: idSchema,
 });
