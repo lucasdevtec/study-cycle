@@ -1,10 +1,7 @@
 "use client";
 
 import { CssBaseline, ThemeProvider, createTheme } from "@mui/material";
-import createCache from "@emotion/cache";
 import { SessionProvider } from "next-auth/react";
-import { useState } from "react";
-import { CacheProvider } from "@emotion/react";
 
 const theme = createTheme({
 	palette: {
@@ -42,20 +39,12 @@ const theme = createTheme({
 });
 
 export default function AppThemeProvider({ children, session }) {
-	const [cache] = useState(() => {
-		const cache = createCache({ key: "mui", prepend: true });
-		cache.compat = true;
-		return cache;
-	});
-
 	return (
 		<SessionProvider session={session}>
-			<CacheProvider value={cache}>
-				<ThemeProvider theme={theme}>
-					<CssBaseline />
-					{children}
-				</ThemeProvider>
-			</CacheProvider>
+			<ThemeProvider theme={theme}>
+				<CssBaseline />
+				{children}
+			</ThemeProvider>
 		</SessionProvider>
 	);
 }

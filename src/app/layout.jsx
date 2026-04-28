@@ -1,6 +1,7 @@
 import { Roboto } from "next/font/google";
 import "./globals.css";
 import AppThemeProvider from "@/components/providers/AppThemeProvider";
+import AppRouterEmotionCacheProvider from "@/components/providers/AppRouterEmotionCacheProvider";
 import AppFooter from "@/components/layout/AppFooter";
 import AppHeader from "@/components/layout/AppHeader";
 
@@ -19,13 +20,15 @@ export default function RootLayout({ children }) {
 	return (
 		<html lang="pt-BR" className={roboto.variable}>
 			<body>
-				<AppThemeProvider>
-					<div className="app-shell">
-						<AppHeader />
-						<main className="app-main">{children}</main>
-						<AppFooter />
-					</div>
-				</AppThemeProvider>
+				<AppRouterEmotionCacheProvider>
+					<AppThemeProvider>
+						<div className="app-shell">
+							<AppHeader />
+							<main className="app-main">{children}</main>
+							<AppFooter />
+						</div>
+					</AppThemeProvider>
+				</AppRouterEmotionCacheProvider>
 			</body>
 		</html>
 	);
