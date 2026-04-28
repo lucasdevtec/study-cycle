@@ -5,13 +5,11 @@ import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import TimerIcon from "@mui/icons-material/Timer";
 import { Alert, Box, Button, Card, CardContent, Container, Grid, LinearProgress, List, ListItem, ListItemText, Stack, Typography } from "@mui/material";
 import Link from "next/link";
-import { useMemo } from "react";
+import React, { Fragment, useMemo } from "react";
 import { CheckCircleOutlined } from "@mui/icons-material";
 
-export function Dashboard({ cycles, error = "" }) {
+export function Dashboard({ cycles, user, error = "" }) {
 	const totalPlannedHours = useMemo(() => cycles.reduce((acc, cycle) => acc + Number(cycle.plannedHours || 0), 0), [cycles]);
-
-	const totalSubjects = useMemo(() => cycles.reduce((acc, cycle) => acc + Number(cycle.subjectsCount || 0), 0), [cycles]);
 
 	const dashboardCards = [
 		{
@@ -20,13 +18,13 @@ export function Dashboard({ cycles, error = "" }) {
 			icon: <TimerIcon color="primary" />,
 		},
 		{
-			label: "Ciclos cadastrados",
-			value: String(cycles.length),
+			label: "Ciclos realizados",
+			value: String(user.totalCyclesDone),
 			icon: <BarChartIcon color="primary" />,
 		},
 		{
-			label: "Disciplinas no total",
-			value: String(totalSubjects),
+			label: "Horas realizadas (em todos os ciclos)",
+			value: String(user.totalHoursDone),
 			icon: <CheckCircleOutlined color="primary" />,
 		},
 	];
@@ -68,27 +66,24 @@ export function Dashboard({ cycles, error = "" }) {
 							{cycles.length ? (
 								<List disablePadding>
 									{cycles.map(cycle => (
-										<ListItem
-											key={cycle.id}
-											secondaryAction={
-												<Button component={Link} href={`/ciclo/${cycle.id}`} endIcon={<OpenInNewIcon />} size="small">
-													Gerenciar
-												</Button>
-											}
-											sx={{ px: 0 }}
-										>
-											<ListItemText primary={cycle.name} secondary={`${cycle.subjectsCount} materias • ${cycle.plannedHours}h planejadas`} />
-										</ListItem>
+										<Fragment key={cycle.id}>
+											<ListItem
+												secondaryAction={
+													<Button component={Link} href={`/ciclo/${cycle.id}`} endIcon={<OpenInNewIcon />} size="small">
+														Gerenciar
+													</Button>
+												}
+												sx={{ px: 0 }}
+											>
+												<ListItemText primary={cycle.name} secondary={`${cycle.subjectsCount} materias • ${cycle.plannedHours}h planejadas`} />
+											</ListItem>
+											<LinearProgress variant="determinate" value={(cycle.atualCycleHours / cycle.plannedHours) * 100} sx={{ height: 10, width: "100%", borderRadius: 999 }} />
+										</Fragment>
 									))}
 								</List>
 							) : (
 								<Typography color="text.secondary">Nenhum ciclo criado ainda. Crie seu primeiro ciclo para começar.</Typography>
 							)}
-							<Typography variant="h5" sx={{ pt: 1 }}>
-								Progresso semanal
-							</Typography>
-							<Typography color="text.secondary">Exemplo visual do indicador de progresso geral.</Typography>
-							<LinearProgress variant="determinate" value={Math.min(100, cycles.length * 15)} sx={{ height: 10, borderRadius: 999 }} />
 						</Stack>
 					</CardContent>
 				</Card>
