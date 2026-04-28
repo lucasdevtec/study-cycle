@@ -1,32 +1,41 @@
 import { withTransaction } from "@/database/transaction";
 import { cycleRepo } from "@/database/repositories/cycleRepo";
 import { cycleSubjectRepo } from "@/database/repositories/cycleSubjectRepo";
-import { createCycleSchema, cycleIdSchema } from "@/lib/modules/cycle/cycle.schema";
+import { createCycleSchema, idSchema } from "@/lib/modules/cycle/cycle.schema";
+import { calculateCyclePlan } from "@/lib/cycle";
 
 export const cycleService = {
-	async createCycle(data) {
-		const parsed = createCycleSchema.parse(data);
+	async createCycle(data, client) {
+		const parsed = createCycleSchema.partial().parse(data);
+		const { name, weeklyHours, userId, subjects } = parsed;
+
+		const { totalPlannedHours, subjects: processedSubjects } = calculateCyclePlan({
+			subjects,
+			weeklyHours,
+		});
 
 		return withTransaction(async client => {
 			const cycle = await cycleRepo.create(
 				{
-					name: parsed.name,
-					weeklyHours: parsed.weeklyHours,
-					userId: parsed.userId,
+					name,
+					weeklyHours,
+					plannedHours: totalPlannedHours,
+					userId,
 				},
 				client,
 			);
 
-			const subjects = this._calc(parsed.subjects, parsed.weeklyHours);
+			const savedSubjects = await cycleSubjectRepo.createMany(cycle.id, processedSubjects, client);
 
-			await cycleSubjectRepo.createMany(cycle.id, subjects, client);
-
-			return { ...cycle, subjects };
+			return {
+				...cycle,
+				subjects: savedSubjects,
+			};
 		});
 	},
 
 	async getByUser(userId) {
-		const parsedId = cycleIdSchema.parse(userId);
+		const parsedId = idSchema.parse(userId);
 
 		const cycles = await cycleRepo.findByUser(parsedId);
 
@@ -45,10 +54,10 @@ export const cycleService = {
 		const subjectsMap = {};
 
 		for (const subject of subjects) {
-			if (!subjectsMap[subject.cycle_id]) {
-				subjectsMap[subject.cycle_id] = [];
+			if (!subjectsMap[subject.cycleId]) {
+				subjectsMap[subject.cycleId] = [];
 			}
-			subjectsMap[subject.cycle_id].push(subject);
+			subjectsMap[subject.cycleId].push(subject);
 		}
 
 		return cycles.map(cycle => {
@@ -56,15 +65,79 @@ export const cycleService = {
 
 			return {
 				...cycle,
-				subjects: cycleSubjects,
+				// subjects: cycleSubjects,
 				subjectsCount: cycleSubjects.length,
-				plannedHours: cycleSubjects.reduce((sum, s) => sum + s.recommended_hours, 0),
+			};
+		});
+	},
+
+	async addProgress(subjectId, additionalHours, userId) {
+		const parsedSubjectId = idSchema.parse(subjectId);
+		const parsedAdditionalHours = Number(additionalHours || 0);
+
+		if (parsedAdditionalHours <= 0) {
+			throw new Error("Horas adicionais inválidas");
+		}
+
+		const subject = await cycleSubjectRepo.findById(parsedSubjectId);
+		if (!subject) throw new Error("Matéria não encontrada");
+
+		const newTotal = subject.hoursDone + parsedAdditionalHours;
+
+		const finalHours = newTotal > subject.recommendedHours ? subject.recommendedHours : newTotal;
+
+		return await cycleSubjectRepo.updateProgress(parsedSubjectId, finalHours);
+	},
+
+	async updateCycle(cycleId, data) {
+		const parsedId = idSchema.parse(cycleId);
+		const parsed = createCycleSchema.partial().parse(data);
+
+		return withTransaction(async client => {
+			const existingCycle = await cycleRepo.findById(parsedId, client);
+
+			if (!existingCycle) {
+				throw new Error("Ciclo não encontrado");
+			}
+
+			if (parsed.userId && existingCycle.userId !== parsed.userId) {
+				throw new Error("Acesso negado");
+			}
+
+			const nextName = parsed.name ?? existingCycle.name;
+			const nextWeeklyHours = Number(parsed.weeklyHours ?? existingCycle.weeklyHours);
+			const currentSubjects = await cycleSubjectRepo.findByCycle(parsedId, client);
+			const nextSubjectsInput = parsed.subjects ?? currentSubjects;
+
+			const { subjects: calculatedSubjects } = calculateCyclePlan({
+				subjects: nextSubjectsInput,
+				weeklyHours: nextWeeklyHours,
+			});
+
+			const updatedCycle = await cycleRepo.update(
+				parsedId,
+				{
+					name: nextName,
+					weeklyHours: nextWeeklyHours,
+				},
+				client,
+			);
+
+			await cycleSubjectRepo.deleteByCycle(parsedId, client);
+			await cycleSubjectRepo.createMany(parsedId, calculatedSubjects, client);
+
+			const subjects = await cycleSubjectRepo.findByCycle(parsedId, client);
+
+			return {
+				...updatedCycle,
+				subjects,
 			};
 		});
 	},
 
 	async getFullCycle(cycleId, userId) {
-		const parsedId = cycleIdSchema.parse(cycleId);
+		const parsedId = idSchema.parse(cycleId);
+		const parsedUserId = idSchema.parse(userId);
 
 		const cycle = await cycleRepo.findById(parsedId);
 
@@ -72,7 +145,7 @@ export const cycleService = {
 			throw new Error("Ciclo não encontrado");
 		}
 
-		if (cycle.userId !== userId) {
+		if (cycle.userId !== parsedUserId) {
 			throw new Error("Acesso negado");
 		}
 
@@ -82,30 +155,11 @@ export const cycleService = {
 	},
 
 	async deleteCycle(cycleId) {
-		const parsedId = cycleIdSchema.parse(cycleId);
+		const parsedId = idSchema.parse(cycleId);
 
 		return withTransaction(async client => {
 			await cycleSubjectRepo.deleteByCycle(parsedId, client);
 			await cycleRepo.delete(parsedId, client);
-		});
-	},
-
-	_calc(subjects, weeklyHours) {
-		const total = subjects.reduce((sum, s) => sum + s.baseWeight + (s.extraWeight || 0), 0);
-
-		const factor = weeklyHours / total;
-
-		return subjects.map(s => {
-			const finalWeight = s.baseWeight + (s.extraWeight || 0);
-
-			return {
-				name: s.name,
-				affinityRank: s.affinityRank,
-				baseWeight: s.baseWeight,
-				extraWeight: s.extraWeight || 0,
-				finalWeight,
-				recommendedHours: Math.ceil(finalWeight * factor),
-			};
 		});
 	},
 };

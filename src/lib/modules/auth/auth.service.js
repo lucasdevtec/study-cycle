@@ -41,11 +41,11 @@ export const authService = {
 
 		const account = await userRepo.findAccount(user.id, "credentials");
 
-		if (!account || !account.password_hash) {
+		if (!account || !account.passwordHash) {
 			throw new Error("Esta conta utiliza login social. Entre com o Google.");
 		}
 
-		const ok = await bcrypt.compare(password, account.password_hash);
+		const ok = await bcrypt.compare(password, account.passwordHash);
 		if (!ok) throw new Error("Credenciais inválidas");
 
 		return this._safe(user);

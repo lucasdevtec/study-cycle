@@ -1,9 +1,9 @@
 import { userRepo } from "@/database/repositories/userRepo";
-import { userIdSchema } from "@/lib/modules/user/user.schema";
+import { idSchema } from "@/lib/modules/user/user.schema";
 
 export const userService = {
 	async getById(id) {
-		const parsedId = userIdSchema.parse(id);
+		const parsedId = idSchema.parse(id);
 
 		const user = await userRepo.findById(parsedId);
 
@@ -29,6 +29,8 @@ export const userService = {
 			id: user.id,
 			name: user.name,
 			email: user.email,
+			totalHoursDone: user.totalHoursDone,
+			totalCyclesDone: user.totalCyclesDone,
 		};
 	},
 };
