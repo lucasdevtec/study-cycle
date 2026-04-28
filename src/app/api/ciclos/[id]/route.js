@@ -1,159 +1,91 @@
 import { NextResponse } from "next/server";
-import { calculateCyclePlan } from "@/lib/cycle";
-import { getDbModels } from "@/lib/db";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/authConfig";
+import { cycleService } from "@/lib/modules/cycle/cycle.service";
+import { createCycleSchema, idSchema } from "@/lib/modules/cycle/cycle.schema";
+import HandleError from "@/utils/handleErrors";
 
-async function parseId(rawParams) {
-  const params = await rawParams;
-  const id = Number(params.id);
-  return Number.isInteger(id) && id > 0 ? id : null;
+export async function GET({ params }) {
+	try {
+		const session = await getServerSession(authOptions);
+
+		if (!session?.user?.id) {
+			throw new Error("Unauthorized");
+		}
+
+		const cycleId = idSchema.parse((await params)?.id);
+
+		const cycle = await cycleService.getFullCycle(cycleId, Number(session.user.id));
+
+		return NextResponse.json(cycle);
+	} catch (err) {
+		return HandleError(err, "Erro ao buscar ciclo", "Ciclo não encontrado");
+	}
 }
 
-async function findCycle(cycleId) {
-  const { Cycle, CycleSubject } = await getDbModels();
-  const cycle = await Cycle.findByPk(cycleId, {
-    include: [{ model: CycleSubject, as: "subjects" }],
-  });
+export async function PUT(req, { params }) {
+	try {
+		const session = await getServerSession(authOptions);
 
-  return cycle;
+		if (!session?.user?.id) {
+			throw new Error("Unauthorized");
+		}
+
+		const cycleId = idSchema.parse((await params)?.id);
+
+		const body = await req.json();
+
+		const parsed = createCycleSchema.partial().parse({
+			...body,
+			userId: Number(session.user.id),
+		});
+
+		const updated = await cycleService.updateCycle(cycleId, parsed);
+
+		return NextResponse.json(updated);
+	} catch (err) {
+		return HandleError(err, "Erro ao atualizar ciclo");
+	}
 }
 
-export async function GET(_request, { params }) {
-  try {
-    const cycleId = await parseId(params);
+export async function DELETE(req, { params }) {
+	try {
+		const session = await getServerSession(authOptions);
 
-    if (!cycleId) {
-      return NextResponse.json({ message: "ID inválido." }, { status: 400 });
-    }
+		if (!session?.user?.id) {
+			throw new Error("Unauthorized");
+		}
 
-    const cycle = await findCycle(cycleId);
+		const cycleId = idSchema.parse((await params)?.id);
 
-    if (!cycle) {
-      return NextResponse.json(
-        { message: "Ciclo não encontrado." },
-        { status: 404 },
-      );
-    }
+		await cycleService.getFullCycle(cycleId, Number(session.user.id));
 
-    return NextResponse.json(cycle.toJSON());
-  } catch (error) {
-    return NextResponse.json(
-      { message: "Erro ao buscar ciclo.", details: error.message },
-      { status: 500 },
-    );
-  }
+		await cycleService.deleteCycle(cycleId);
+
+		return NextResponse.json({
+			message: "Ciclo removido com sucesso",
+		});
+	} catch (err) {
+		return HandleError(err, "Erro ao remover ciclo");
+	}
 }
 
-export async function PATCH(request, { params }) {
-  try {
-    const cycleId = await parseId(params);
+export async function PATCH(req, { params }) {
+	try {
+		const session = await getServerSession(authOptions);
 
-    if (!cycleId) {
-      return NextResponse.json({ message: "ID inválido." }, { status: 400 });
-    }
+		if (!session?.user?.id) {
+			throw new Error("Unauthorized");
+		}
 
-    const body = await request.json();
-    const name = String(body.name || "").trim();
-    const weeklyHours = Number(body.weeklyHours || 0);
-    const subjectsInput = Array.isArray(body.subjects) ? body.subjects : null;
+		const cycleId = idSchema.parse((await params)?.id);
 
-    if (!name) {
-      return NextResponse.json(
-        { message: "Nome do ciclo é obrigatório." },
-        { status: 400 },
-      );
-    }
+		const body = await req.json();
 
-    const { sequelize, Cycle, CycleSubject } = await getDbModels();
-    const cycle = await Cycle.findByPk(cycleId);
+		const result = await cycleService.updateSubjectHours(cycleId, Number(session.user.id), body);
 
-    if (!cycle) {
-      return NextResponse.json(
-        { message: "Ciclo não encontrado." },
-        { status: 404 },
-      );
-    }
-
-    await sequelize.transaction(async (transaction) => {
-      cycle.name = name;
-
-      if (Number.isFinite(weeklyHours) && weeklyHours > 0) {
-        cycle.weeklyHours = weeklyHours;
-      }
-
-      await cycle.save({ transaction });
-
-      if (subjectsInput) {
-        const subjects = subjectsInput
-          .map((subject) => ({
-            name: String(subject.name || "").trim(),
-            affinityRank: Number(subject.affinityRank || 3),
-            extraWeight: Number(subject.extraWeight || 0),
-          }))
-          .filter((subject) => subject.name);
-
-        if (!subjects.length) {
-          throw new Error("Informe ao menos uma matéria válida.");
-        }
-
-        const plan = calculateCyclePlan({
-          subjects,
-          weeklyHours: cycle.weeklyHours,
-        });
-
-        await CycleSubject.destroy({
-          where: { cycleId: cycle.id },
-          transaction,
-        });
-
-        await CycleSubject.bulkCreate(
-          plan.subjects.map((subject) => ({
-            cycleId: cycle.id,
-            name: subject.name,
-            affinityRank: subject.affinityRank,
-            baseWeight: subject.baseWeight,
-            extraWeight: subject.extraWeight,
-            finalWeight: subject.finalWeight,
-            recommendedHours: subject.recommendedHours,
-          })),
-          { transaction },
-        );
-      }
-    });
-
-    return NextResponse.json({ message: "Ciclo atualizado com sucesso." });
-  } catch (error) {
-    return NextResponse.json(
-      { message: "Erro ao atualizar ciclo.", details: error.message },
-      { status: 500 },
-    );
-  }
-}
-
-export async function DELETE(_request, { params }) {
-  try {
-    const cycleId = await parseId(params);
-
-    if (!cycleId) {
-      return NextResponse.json({ message: "ID inválido." }, { status: 400 });
-    }
-
-    const { Cycle } = await getDbModels();
-    const cycle = await Cycle.findByPk(cycleId);
-
-    if (!cycle) {
-      return NextResponse.json(
-        { message: "Ciclo não encontrado." },
-        { status: 404 },
-      );
-    }
-
-    await cycle.destroy();
-
-    return NextResponse.json({ message: "Ciclo removido com sucesso." });
-  } catch (error) {
-    return NextResponse.json(
-      { message: "Erro ao remover ciclo.", details: error.message },
-      { status: 500 },
-    );
-  }
+		return NextResponse.json(result);
+	} catch (err) {
+		return HandleError(err, "Erro ao atualizar horas do ciclo");
+	}
 }

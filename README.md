@@ -10,8 +10,9 @@ Plataforma de ciclos de estudo com distribuicao proporcional de horas por materi
 
 ## Paginas
 
-- `/` landing page
+- `/` Home page
 - `/login` tela de autenticacao
+- `/register` tela de registro
 - `/dashboard` visao de progresso
 - `/ciclo/criar` criacao de ciclo com calculo de horas
 
