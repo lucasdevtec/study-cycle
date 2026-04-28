@@ -38,4 +38,19 @@ export const userRepo = {
 		const { rows } = await query(`SELECT id, name, email FROM users`, [], client);
 		return snakeToCamel(rows);
 	},
+
+	async addCycleCompletion(userId, hoursToAdd, client) {
+		const { rows } = await query(
+			`UPDATE users
+       SET total_cycles_done = total_cycles_done + 1,
+           total_hours_done = total_hours_done + $1,
+           updated_at = NOW()
+       WHERE id = $2
+       RETURNING *`,
+			[hoursToAdd, userId],
+			client,
+		);
+
+		return rows[0] ? snakeToCamel(rows[0]) : null;
+	},
 };

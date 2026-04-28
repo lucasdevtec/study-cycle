@@ -1,15 +1,19 @@
 import { getServerSession } from "next-auth";
-import { CycleDetails } from "./cycleDetails";
+import { Cycle as CycleScreen } from "./cycleScreen";
 import { redirect } from "next/navigation";
+import { Alert, Box, Container, Stack, Typography } from "@mui/material";
 import { authOptions } from "@/lib/authConfig";
 import { cycleService } from "@/lib/modules/cycle/cycle.service";
+import Link from "next/link";
 
 export default async function CyclePage({ params }) {
 	const session = await getServerSession(authOptions);
-	const { id } = params;
+
+	const { id } = await params;
 
 	if (!session?.user?.id) {
-		redirect("/login");
+		const callbackUrl = encodeURIComponent(`/ciclo/${id}`);
+		redirect(`/login?callbackUrl=${callbackUrl}`);
 	}
 
 	const userId = Number(session.user.id);
@@ -17,9 +21,23 @@ export default async function CyclePage({ params }) {
 	try {
 		const cycle = await cycleService.getFullCycle(id, userId);
 
-		return <CycleDetails cycle={cycle} />;
+		if (!cycle) {
+			throw new Error("Ciclo não encontrado");
+		}
+
+		return <CycleScreen cycle={cycle} />;
 	} catch (error) {
-		console.error("Erro ao carregar os ciclos:", error);
-		return <CycleDetails cycle={[]} error={error.message} />;
+		return (
+			<Box sx={{ flex: 1, display: "flex", flexDirection: "column", backgroundColor: "background.default" }}>
+				<Container maxWidth="md" sx={{ py: 6 }}>
+					<Stack spacing={2}>
+						<Typography variant="h3">Ciclo</Typography>
+						<Alert severity="error">
+							{error?.message}. Para voltar, <Link href="/dashboard">clique aqui</Link>.
+						</Alert>
+					</Stack>
+				</Container>
+			</Box>
+		);
 	}
 }

@@ -41,6 +41,11 @@ export const cycleSubjectRepo = {
 		return rows[0] ? snakeToCamel(rows[0]) : null;
 	},
 
+	async findByIdForUpdate(subjectId, client) {
+		const { rows } = await query(`SELECT * FROM cycle_subjects WHERE id = $1 FOR UPDATE`, [subjectId], client);
+		return rows[0] ? snakeToCamel(rows[0]) : null;
+	},
+
 	async findByCycle(cycleId, client) {
 		const { rows } = await query(`SELECT * FROM cycle_subjects WHERE cycle_id = $1 ORDER BY id`, [cycleId], client);
 
@@ -49,6 +54,19 @@ export const cycleSubjectRepo = {
 
 	async deleteByCycle(cycleId, client) {
 		await query(`DELETE FROM cycle_subjects WHERE cycle_id = $1`, [cycleId], client);
+		return true;
+	},
+
+	async resetProgressByCycle(cycleId, client) {
+		await query(
+			`UPDATE cycle_subjects
+       SET hours_done = 0,
+           updated_at = NOW()
+       WHERE cycle_id = $1`,
+			[cycleId],
+			client,
+		);
+
 		return true;
 	},
 };

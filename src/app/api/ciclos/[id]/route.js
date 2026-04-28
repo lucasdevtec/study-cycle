@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authConfig";
 import { cycleService } from "@/lib/modules/cycle/cycle.service";
-import { formatZodError } from "@/utils/zodErrors";
 import { createCycleSchema, idSchema } from "@/lib/modules/cycle/cycle.schema";
 import HandleError from "@/utils/handleErrors";
 
@@ -85,5 +84,29 @@ export async function DELETE(req, { params }) {
 		});
 	} catch (err) {
 		return HandleError(err, "Erro ao remover ciclo");
+	}
+}
+
+export async function PATCH(req, { params }) {
+	try {
+		const session = await getServerSession(authOptions);
+
+		if (!session?.user?.id) {
+			return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+		}
+
+		const cycleId = parseId(await params);
+
+		if (!cycleId) {
+			return NextResponse.json({ message: "ID inválido" }, { status: 400 });
+		}
+
+		const body = await req.json();
+
+		const result = await cycleService.updateSubjectHours(cycleId, Number(session.user.id), body);
+
+		return NextResponse.json(result);
+	} catch (err) {
+		return HandleError(err, "Erro ao atualizar horas do ciclo");
 	}
 }

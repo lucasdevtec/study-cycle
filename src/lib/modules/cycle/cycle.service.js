@@ -1,7 +1,8 @@
 import { withTransaction } from "@/database/transaction";
 import { cycleRepo } from "@/database/repositories/cycleRepo";
 import { cycleSubjectRepo } from "@/database/repositories/cycleSubjectRepo";
-import { createCycleSchema, idSchema } from "@/lib/modules/cycle/cycle.schema";
+import { userRepo } from "@/database/repositories/userRepo";
+import { createCycleSchema, idSchema, updateSubjectHoursSchema } from "@/lib/modules/cycle/cycle.schema";
 import { calculateCyclePlan } from "@/lib/cycle";
 
 export const cycleService = {
@@ -160,6 +161,90 @@ export const cycleService = {
 		return withTransaction(async client => {
 			await cycleSubjectRepo.deleteByCycle(parsedId, client);
 			await cycleRepo.delete(parsedId, client);
+		});
+	},
+
+	async updateSubjectHours(cycleId, userId, payload) {
+		const parsedCycleId = idSchema.parse(cycleId);
+		const parsedUserId = idSchema.parse(userId);
+		const { subjectId, hoursDone } = updateSubjectHoursSchema.parse(payload);
+
+		return withTransaction(async client => {
+			const cycle = await cycleRepo.findByIdForUpdate(parsedCycleId, client);
+
+			if (!cycle) {
+				throw new Error("Ciclo não encontrado");
+			}
+
+			if (cycle.userId !== parsedUserId) {
+				throw new Error("Acesso negado");
+			}
+
+			const subject = await cycleSubjectRepo.findByIdForUpdate(subjectId, client);
+
+			if (!subject || subject.cycleId !== parsedCycleId) {
+				throw new Error("Matéria não encontrada");
+			}
+
+			const boundedHours = Math.max(0, Math.min(subject.recommendedHours, Number(hoursDone)));
+
+			await cycleSubjectRepo.updateProgress(subjectId, boundedHours, client);
+
+			const subjects = await cycleSubjectRepo.findByCycle(parsedCycleId, client);
+			const atualCycleHours = subjects.reduce((acc, item) => acc + Number(item.hoursDone || 0), 0);
+			const allSubjectsCompleted = subjects.every(item => Number(item.hoursDone || 0) >= Number(item.recommendedHours || 0));
+			const cycleJustCompleted = allSubjectsCompleted && !cycle.cycleDone;
+
+			let updatedCycle;
+
+			if (cycleJustCompleted) {
+				updatedCycle = await cycleRepo.markCycleCompleted(parsedCycleId, Number(cycle.plannedHours || 0), atualCycleHours, client);
+				await userRepo.addCycleCompletion(parsedUserId, Number(cycle.plannedHours || 0), client);
+			} else {
+				updatedCycle = await cycleRepo.updateProgressSnapshot(
+					parsedCycleId,
+					{
+						atualCycleHours,
+						cycleDone: allSubjectsCompleted ? cycle.cycleDone : false,
+					},
+					client,
+				);
+			}
+
+			return {
+				cycle: updatedCycle,
+				subjects,
+				cycleJustCompleted,
+				allSubjectsCompleted,
+			};
+		});
+	},
+
+	async restartCycle(cycleId, userId) {
+		const parsedCycleId = idSchema.parse(cycleId);
+		const parsedUserId = idSchema.parse(userId);
+
+		return withTransaction(async client => {
+			const cycle = await cycleRepo.findByIdForUpdate(parsedCycleId, client);
+
+			if (!cycle) {
+				throw new Error("Ciclo não encontrado");
+			}
+
+			if (cycle.userId !== parsedUserId) {
+				throw new Error("Acesso negado");
+			}
+
+			await cycleSubjectRepo.resetProgressByCycle(parsedCycleId, client);
+
+			const nextCycleDone = cycle.cycleDone ? false : cycle.cycleDone;
+			const updatedCycle = await cycleRepo.restartProgress(parsedCycleId, nextCycleDone, client);
+			const subjects = await cycleSubjectRepo.findByCycle(parsedCycleId, client);
+
+			return {
+				cycle: updatedCycle,
+				subjects,
+			};
 		});
 	},
 };
