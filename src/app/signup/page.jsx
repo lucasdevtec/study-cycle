@@ -5,7 +5,6 @@ import { Box, Button, Card, CardContent, Container, Stack, TextField, Typography
 import { PersonAdd as PersonAddIcon } from "@mui/icons-material";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import AppHeader from "@/components/layout/AppHeader";
 
 export default function SignupPage() {
 	const router = useRouter();

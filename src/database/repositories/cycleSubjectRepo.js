@@ -52,6 +52,13 @@ export const cycleSubjectRepo = {
 		return snakeToCamel(rows);
 	},
 
+	async findByCycleIds(cycleIds, client) {
+		if (!cycleIds || !cycleIds.length) return [];
+		const { rows } = await query(`SELECT * FROM cycle_subjects WHERE cycle_id = ANY($1::int[]) ORDER BY id`, [cycleIds], client);
+
+		return snakeToCamel(rows);
+	},
+
 	async deleteByCycle(cycleId, client) {
 		await query(`DELETE FROM cycle_subjects WHERE cycle_id = $1`, [cycleId], client);
 		return true;

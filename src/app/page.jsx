@@ -5,7 +5,6 @@ import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import InsightsIcon from "@mui/icons-material/Insights";
 import { Box, Button, Card, CardContent, Chip, Container, Grid, Stack, Typography } from "@mui/material";
 import Link from "next/link";
-import AppHeader from "@/components/layout/AppHeader";
 import { PlayCircle } from "@mui/icons-material";
 
 const features = [

@@ -31,10 +31,11 @@ export default function CreateCyclePage() {
 	}
 
 	function addSubject() {
+		const id = typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random());
 		setSubjects(current => [
 			...current,
 			{
-				id: crypto.randomUUID(),
+				id,
 				name: "",
 				affinityRank: 3,
 				extraWeight: 0,
@@ -49,16 +50,26 @@ export default function CreateCyclePage() {
 	async function saveCycle() {
 		try {
 			setIsSaving(true);
-			const cleanedSubjects = subjects
-				.map(({ id, ...subject }) => ({
-					...subject,
-					name: String(subject.name || "").trim(),
-				}))
-				.filter(subject => subject.name);
+			const finalWeeklyHours = Number(weeklyHours || 0);
+
 			if (!cycleName.trim()) {
 				setFeedback({ type: "error", message: "Informe o nome do ciclo." });
 				return;
 			}
+
+			if (finalWeeklyHours < 1) {
+				setFeedback({ type: "error", message: "Informe as horas semanais disponíveis (mínimo 1h)." });
+				return;
+			}
+
+			const cleanedSubjects = subjects
+				.map(({ id, ...subject }) => ({
+					...subject,
+					name: String(subject.name || "").trim(),
+					extraWeight: Number(subject.extraWeight || 0),
+				}))
+				.filter(subject => subject.name);
+
 			if (!cleanedSubjects.length) {
 				setFeedback({
 					type: "error",
@@ -75,8 +86,8 @@ export default function CreateCyclePage() {
 					"Content-Type": "application/json",
 				},
 				body: JSON.stringify({
-					name: cycleName,
-					weeklyHours,
+					name: cycleName.trim(),
+					weeklyHours: finalWeeklyHours,
 					subjects: cleanedSubjects,
 				}),
 			});
@@ -110,7 +121,16 @@ export default function CreateCyclePage() {
 								<Stack spacing={3}>
 									<TextField label="Nome do ciclo" value={cycleName} onChange={event => setCycleName(event.target.value)} placeholder="Ex.: Ciclo ENEM Maio" fullWidth />
 
-									<TextField label="Horas semanais disponíveis" type="number" value={weeklyHours} onChange={event => setWeeklyHours(Number(event.target.value))} />
+									<TextField
+										label="Horas semanais disponíveis"
+										type="number"
+										value={weeklyHours}
+										onChange={event => {
+											const val = event.target.value;
+											setWeeklyHours(val === "" ? "" : Math.max(0, parseInt(val, 10) || 0));
+										}}
+										slotProps={{ htmlInput: { min: 1 } }}
+									/>
 
 									<Divider />
 
@@ -143,12 +163,14 @@ export default function CreateCyclePage() {
 													<TextField
 														label="Peso extra"
 														type="number"
-														value={subject.extraWeight}
-														onChange={event =>
+														value={subject.extraWeight ?? ""}
+														onChange={event => {
+															const val = event.target.value;
 															updateSubject(index, {
-																extraWeight: Number(event.target.value || 0),
-															})
-														}
+																extraWeight: val === "" ? "" : Math.max(0, parseInt(val, 10) || 0),
+															});
+														}}
+														slotProps={{ htmlInput: { min: 0 } }}
 														fullWidth
 													/>
 												</Grid>

@@ -6,8 +6,8 @@ import { createCycleSchema, idSchema, updateSubjectHoursSchema } from "@/lib/mod
 import { calculateCyclePlan } from "@/lib/cycle";
 
 export const cycleService = {
-	async createCycle(data, client) {
-		const parsed = createCycleSchema.partial().parse(data);
+	async createCycle(data) {
+		const parsed = createCycleSchema.parse(data);
 		const { name, weeklyHours, userId, subjects } = parsed;
 
 		const { totalPlannedHours, subjects: processedSubjects } = calculateCyclePlan({
@@ -45,12 +45,7 @@ export const cycleService = {
 		}
 
 		const cycleIds = cycles.map(c => c.id);
-
-		const subjects = [];
-		for (const cycleId of cycleIds) {
-			const cycleSubjects = await cycleSubjectRepo.findByCycle(cycleId);
-			subjects.push(...cycleSubjects);
-		}
+		const subjects = await cycleSubjectRepo.findByCycleIds(cycleIds);
 
 		const subjectsMap = {};
 

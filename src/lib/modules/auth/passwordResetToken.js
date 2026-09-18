@@ -38,11 +38,19 @@ export function verifyPasswordResetToken(token, passwordHash) {
 	}
 
 	const expectedSignature = signPayload(payload, passwordHash);
-	if (signature !== expectedSignature) {
+	const signatureBuf = Buffer.from(signature);
+	const expectedBuf = Buffer.from(expectedSignature);
+
+	if (signatureBuf.length !== expectedBuf.length || !crypto.timingSafeEqual(signatureBuf, expectedBuf)) {
 		throw new Error("Token inválido ou expirado");
 	}
 
-	const parsed = JSON.parse(base64UrlDecode(payload));
+	let parsed;
+	try {
+		parsed = JSON.parse(base64UrlDecode(payload));
+	} catch {
+		throw new Error("Token inválido");
+	}
 
 	if (!parsed?.userId || !parsed?.email || !parsed?.expiresAt) {
 		throw new Error("Token inválido");

@@ -17,9 +17,10 @@ const pool =
 		connectionTimeoutMillis: 5000,
 		idleTimeoutMillis: 10000,
 	});
-console.log("DB connected:", process.env.DATABASE_URL?.split("@")[1]);
-
 if (process.env.NODE_ENV !== "production") {
+	if (!globalForPool.pool) {
+		console.log("DB pool initialized");
+	}
 	globalForPool.pool = pool;
 }
 

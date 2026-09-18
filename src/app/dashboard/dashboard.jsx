@@ -8,8 +8,8 @@ import Link from "next/link";
 import React, { Fragment, useMemo } from "react";
 import { CheckCircleOutlined } from "@mui/icons-material";
 
-export function Dashboard({ cycles, user, error = "" }) {
-	const totalPlannedHours = useMemo(() => cycles.reduce((acc, cycle) => acc + Number(cycle.plannedHours || 0), 0), [cycles]);
+export function Dashboard({ cycles = [], user = {}, error = "" }) {
+	const totalPlannedHours = useMemo(() => (cycles || []).reduce((acc, cycle) => acc + Number(cycle.plannedHours || 0), 0), [cycles]);
 
 	const dashboardCards = [
 		{
@@ -19,12 +19,12 @@ export function Dashboard({ cycles, user, error = "" }) {
 		},
 		{
 			label: "Ciclos realizados",
-			value: String(user.totalCyclesDone),
+			value: String(user?.totalCyclesDone ?? 0),
 			icon: <BarChartIcon color="primary" />,
 		},
 		{
 			label: "Horas realizadas (em todos os ciclos)",
-			value: String(user.totalHoursDone),
+			value: String(user?.totalHoursDone ?? 0),
 			icon: <CheckCircleOutlined color="primary" />,
 		},
 	];
@@ -77,7 +77,11 @@ export function Dashboard({ cycles, user, error = "" }) {
 											>
 												<ListItemText primary={cycle.name} secondary={`${cycle.subjectsCount} materias • ${cycle.plannedHours}h planejadas`} />
 											</ListItem>
-											<LinearProgress variant="determinate" value={(cycle.atualCycleHours / cycle.plannedHours) * 100} sx={{ height: 10, width: "100%", borderRadius: 999 }} />
+											<LinearProgress
+												variant="determinate"
+												value={cycle.plannedHours > 0 ? Math.min(100, Math.round((Number(cycle.atualCycleHours || 0) / Number(cycle.plannedHours)) * 100)) : 0}
+												sx={{ height: 10, width: "100%", borderRadius: 999 }}
+											/>
 										</Fragment>
 									))}
 								</List>

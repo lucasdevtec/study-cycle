@@ -5,7 +5,7 @@ import { cycleService } from "@/lib/modules/cycle/cycle.service";
 import { createCycleSchema, idSchema } from "@/lib/modules/cycle/cycle.schema";
 import HandleError from "@/utils/handleErrors";
 
-export async function GET({ params }) {
+export async function GET(req, { params }) {
 	try {
 		const session = await getServerSession(authOptions);
 

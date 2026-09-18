@@ -1,7 +1,7 @@
 "use client";
 
 import AddIcon from "@mui/icons-material/Add";
-import { Alert, Box, Button, Card, CardContent, Container, Divider, Grid, MenuItem, Stack, TextField, Typography } from "@mui/material";
+import { Alert, Box, Button, Card, CardContent, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, Grid, MenuItem, Stack, TextField, Typography } from "@mui/material";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { affinityOptions, calculateCyclePlan } from "@/lib/cycle";
@@ -9,14 +9,15 @@ import { DeleteOutlined } from "@mui/icons-material";
 
 export function EditCycle({ cycle }) {
 	const router = useRouter();
-	const [cycleName, setCycleName] = useState(cycle?.name);
+	const [cycleName, setCycleName] = useState(cycle?.name || "");
 	const [isSaving, setIsSaving] = useState(false);
 	const [isDeleting, setIsDeleting] = useState(false);
+	const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
 	const [feedback, setFeedback] = useState({ type: "", message: "" });
-	const [weeklyHours, setWeeklyHours] = useState(cycle?.weeklyHours);
+	const [weeklyHours, setWeeklyHours] = useState(cycle?.weeklyHours ?? 32);
 	const cycleId = cycle?.id;
 
-	const [subjects, setSubjects] = useState(cycle?.subjects);
+	const [subjects, setSubjects] = useState(cycle?.subjects || []);
 
 	const plan = useMemo(() => calculateCyclePlan({ subjects, weeklyHours }), [subjects, weeklyHours]);
 
@@ -32,10 +33,11 @@ export function EditCycle({ cycle }) {
 	}
 
 	function addSubject() {
+		const id = typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random());
 		setSubjects(current => [
 			...current,
 			{
-				id: crypto.randomUUID(),
+				id,
 				name: "",
 				affinityRank: 3,
 				extraWeight: 0,
@@ -54,16 +56,26 @@ export function EditCycle({ cycle }) {
 				throw new Error("ID do ciclo inválido.");
 			}
 
-			const cleanedSubjects = subjects
-				.map(({ id, ...subject }) => ({
-					...subject,
-					name: String(subject.name || "").trim(),
-				}))
-				.filter(subject => subject.name);
+			const finalWeeklyHours = Number(weeklyHours || 0);
+
 			if (!cycleName.trim()) {
 				setFeedback({ type: "error", message: "Informe o nome do ciclo." });
 				return;
 			}
+
+			if (finalWeeklyHours < 1) {
+				setFeedback({ type: "error", message: "Informe as horas semanais disponíveis (mínimo 1h)." });
+				return;
+			}
+
+			const cleanedSubjects = subjects
+				.map(({ id, ...subject }) => ({
+					...subject,
+					name: String(subject.name || "").trim(),
+					extraWeight: Number(subject.extraWeight || 0),
+				}))
+				.filter(subject => subject.name);
+
 			if (!cleanedSubjects.length) {
 				setFeedback({
 					type: "error",
@@ -80,8 +92,8 @@ export function EditCycle({ cycle }) {
 					"Content-Type": "application/json",
 				},
 				body: JSON.stringify({
-					name: cycleName,
-					weeklyHours,
+					name: cycleName.trim(),
+					weeklyHours: finalWeeklyHours,
 					subjects: cleanedSubjects,
 				}),
 			});
@@ -119,9 +131,11 @@ export function EditCycle({ cycle }) {
 				throw new Error(data?.message || "Falha ao excluir ciclo.");
 			}
 
+			setConfirmDeleteOpen(false);
 			router.push("/dashboard");
 		} catch (error) {
 			setFeedback({ type: "error", message: error.message });
+			setConfirmDeleteOpen(false);
 		} finally {
 			setIsDeleting(false);
 		}
@@ -142,7 +156,16 @@ export function EditCycle({ cycle }) {
 								<Stack spacing={3}>
 									<TextField label="Nome do ciclo" value={cycleName} onChange={event => setCycleName(event.target.value)} placeholder="Ex.: Ciclo ENEM Maio" fullWidth />
 
-									<TextField label="Horas semanais disponíveis" type="number" value={weeklyHours} onChange={event => setWeeklyHours(Number(event.target.value))} />
+									<TextField
+										label="Horas semanais disponíveis"
+										type="number"
+										value={weeklyHours}
+										onChange={event => {
+											const val = event.target.value;
+											setWeeklyHours(val === "" ? "" : Math.max(0, parseInt(val, 10) || 0));
+										}}
+										slotProps={{ htmlInput: { min: 1 } }}
+									/>
 
 									<Divider />
 
@@ -175,12 +198,14 @@ export function EditCycle({ cycle }) {
 													<TextField
 														label="Peso extra"
 														type="number"
-														value={subject.extraWeight}
-														onChange={event =>
+														value={subject.extraWeight ?? ""}
+														onChange={event => {
+															const val = event.target.value;
 															updateSubject(index, {
-																extraWeight: Number(event.target.value || 0),
-															})
-														}
+																extraWeight: val === "" ? "" : Math.max(0, parseInt(val, 10) || 0),
+															});
+														}}
+														slotProps={{ htmlInput: { min: 0 } }}
 														fullWidth
 													/>
 												</Grid>
@@ -200,7 +225,7 @@ export function EditCycle({ cycle }) {
 											{isSaving ? "Salvando..." : "Salvar ciclo"}
 										</Button>
 
-										<Button variant="outlined" color="error" onClick={removeCycle} disabled={isSaving || isDeleting}>
+										<Button variant="outlined" color="error" onClick={() => setConfirmDeleteOpen(true)} disabled={isSaving || isDeleting}>
 											{isDeleting ? "Excluindo..." : "Excluir ciclo"}
 										</Button>
 									</Stack>
@@ -233,6 +258,23 @@ export function EditCycle({ cycle }) {
 					</Grid>
 				</Grid>
 			</Container>
+
+			<Dialog open={confirmDeleteOpen} onClose={() => setConfirmDeleteOpen(false)} maxWidth="xs" fullWidth>
+				<DialogTitle>Excluir ciclo</DialogTitle>
+				<DialogContent>
+					<DialogContentText>
+						Tem certeza que deseja excluir o ciclo <strong>{cycleName}</strong>? Esta ação é irreversível e excluirá todas as horas e matérias associadas a ele.
+					</DialogContentText>
+				</DialogContent>
+				<DialogActions>
+					<Button onClick={() => setConfirmDeleteOpen(false)} disabled={isDeleting}>
+						Cancelar
+					</Button>
+					<Button color="error" variant="contained" onClick={removeCycle} disabled={isDeleting}>
+						{isDeleting ? "Excluindo..." : "Confirmar exclusão"}
+					</Button>
+				</DialogActions>
+			</Dialog>
 		</Box>
 	);
 }

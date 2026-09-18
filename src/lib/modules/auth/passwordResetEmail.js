@@ -12,7 +12,7 @@ export async function sendPasswordResetEmail({ to, resetLink }) {
 	const resend = getResendClient();
 	const from = process.env.RESEND_FROM || "StudyCycle <onboarding@resend.dev>";
 
-	await resend.emails.send({
+	const { error } = await resend.emails.send({
 		from,
 		to,
 		subject: "Redefinição de senha - StudyCycle",
@@ -30,4 +30,9 @@ export async function sendPasswordResetEmail({ to, resetLink }) {
 			</div>
 		`,
 	});
+
+	if (error) {
+		console.error("Resend send error:", error);
+		throw new Error(error.message || "Falha ao enviar e-mail de redefinição de senha");
+	}
 }

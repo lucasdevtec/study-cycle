@@ -21,6 +21,6 @@ export default async function DashboardPage() {
 		return <Dashboard cycles={cycles} user={user} />;
 	} catch (error) {
 		console.error("Erro ao carregar os ciclos:", error);
-		return <Dashboard cycles={[]} error="Erro ao carregar os ciclos." />;
+		return <Dashboard cycles={[]} user={{ totalCyclesDone: 0, totalHoursDone: 0 }} error="Erro ao carregar os ciclos." />;
 	}
 }
