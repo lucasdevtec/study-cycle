@@ -5,6 +5,14 @@ import { authOptions } from "@/lib/authConfig";
 import { cycleService } from "@/lib/modules/cycle/cycle.service";
 import { userService } from "@/lib/modules/user/user.service";
 
+export const metadata = {
+	title: "Dashboard",
+	robots: {
+		index: false,
+		follow: false,
+	},
+};
+
 export default async function DashboardPage() {
 	const session = await getServerSession(authOptions);
 

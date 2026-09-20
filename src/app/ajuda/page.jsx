@@ -1,6 +1,12 @@
-"use client";
-
 import { Box, Card, CardContent, Container, Stack, Typography } from "@mui/material";
+
+export const metadata = {
+	title: "Central de Ajuda e Perguntas Frequentes",
+	description: "Tire dúvidas sobre como criar ciclos de estudo, marcar progresso hora a hora, redefinir senha e organizar sua rotina no StudyCycle.",
+	alternates: {
+		canonical: "/ajuda",
+	},
+};
 
 const helpItems = [
 	{
@@ -21,6 +27,19 @@ const helpItems = [
 	},
 ];
 
+const faqJsonLd = {
+	"@context": "https://schema.org",
+	"@type": "FAQPage",
+	mainEntity: helpItems.map(item => ({
+		"@type": "Question",
+		name: item.title,
+		acceptedAnswer: {
+			"@type": "Answer",
+			text: item.description,
+		},
+	})),
+};
+
 export default function AjudaPage() {
 	return (
 		<Box
@@ -31,6 +50,7 @@ export default function AjudaPage() {
 				background: "linear-gradient(150deg, #edf7f4 0%, #fef8e9 100%)",
 			}}
 		>
+			<script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
 			<Container maxWidth="md" sx={{ py: 6 }}>
 				<Stack spacing={2.5}>
 					<Typography variant="h3">Central de Ajuda</Typography>

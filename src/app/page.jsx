@@ -1,72 +1,33 @@
-"use client";
+import HomeClient from "./HomeClient";
 
-import BoltIcon from "@mui/icons-material/Bolt";
-import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
-import InsightsIcon from "@mui/icons-material/Insights";
-import { Box, Button, Card, CardContent, Chip, Container, Grid, Stack, Typography } from "@mui/material";
-import Link from "next/link";
-import { PlayCircle } from "@mui/icons-material";
+export const metadata = {
+	title: "StudyCycle | Planejamento e Ciclos de Estudo Inteligentes",
+	description: "Organize seu ciclo de estudos com base em afinidade e peso por matéria. Distribuição proporcional de horas para concursos, ENEM e vestibulares.",
+	alternates: {
+		canonical: "/",
+	},
+};
 
-const features = [
-	{
-		title: "Mapeamento de Afinidade",
-		description: "Classifique cada materia de 1 a 5 para mostrar onde esta sua maior dor.",
-		icon: <InsightsIcon color="primary" />,
+const jsonLd = {
+	"@context": "https://schema.org",
+	"@type": "WebApplication",
+	name: "StudyCycle",
+	applicationCategory: "EducationalApplication",
+	operatingSystem: "Web, Mobile",
+	offers: {
+		"@type": "Offer",
+		price: "0",
+		priceCurrency: "BRL",
 	},
-	{
-		title: "Peso Estrategico",
-		description: "Some pesos extras para materias com edital extenso ou prioridade na prova.",
-		icon: <BoltIcon color="primary" />,
-	},
-	{
-		title: "Proporcionalidade Inversa",
-		description: "Quanto pior sua afinidade, mais horas recomendadas para evoluir rapido.",
-		icon: <CalendarMonthIcon color="primary" />,
-	},
-];
+	description: "Plataforma web para planejamento de ciclos de estudo com distribuição inteligente de horas por matéria e acompanhamento de progresso.",
+	featureList: ["Mapeamento de afinidade por matéria", "Cálculo com peso estratégico proporcional", "Acompanhamento hora a hora", "Retomada flexível de estudos"],
+};
 
 export default function Home() {
 	return (
-		<Box
-			sx={{
-				flex: 1,
-				display: "flex",
-				flexDirection: "column",
-				background: "linear-gradient(150deg, #edf7f4 0%, #fef8e9 100%)",
-			}}
-		>
-			<Container maxWidth="lg" sx={{ pt: { xs: 5, md: 10 }, pb: 10 }}>
-				<Stack spacing={3} sx={{ mb: 8 }}>
-					<Chip label="Onde seu esforço encontra o equilíbrio!" color="primary" sx={{ width: "fit-content" }} />
-					<Typography variant="h1" sx={{ fontSize: { xs: "2rem", md: "3.3rem" }, maxWidth: 820 }}>
-						StudyCycle transforma seu estudo em progresso contínuo, sem horários engessados.
-					</Typography>
-					<Typography variant="h6" color="text.secondary" sx={{ maxWidth: 780, lineHeight: 1.6 }}>
-						Classifique afinidade, adicione peso estratégico e receba uma distribuição inteligente de horas. Se pausar hoje, você retoma amanhã de onde parou.
-					</Typography>
-					<Box>
-						<Button component={Link} href="/ciclo/criar" variant="contained" size="large" startIcon={<PlayCircle />}>
-							Começar Ciclo Gratuitamente
-						</Button>
-					</Box>
-				</Stack>
-
-				<Grid container spacing={3}>
-					{features.map(feature => (
-						<Grid key={feature.title} size={{ xs: 12, md: 4 }}>
-							<Card sx={{ height: "100%", border: "1px solid #d8e9e3" }}>
-								<CardContent>
-									<Stack spacing={2}>
-										{feature.icon}
-										<Typography variant="h5">{feature.title}</Typography>
-										<Typography color="text.secondary">{feature.description}</Typography>
-									</Stack>
-								</CardContent>
-							</Card>
-						</Grid>
-					))}
-				</Grid>
-			</Container>
-		</Box>
+		<>
+			<script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+			<HomeClient />
+		</>
 	);
 }

@@ -6,6 +6,14 @@ import { authOptions } from "@/lib/authConfig";
 import { cycleService } from "@/lib/modules/cycle/cycle.service";
 import { EditCycle } from "./editCycle";
 
+export const metadata = {
+	title: "Editar Ciclo",
+	robots: {
+		index: false,
+		follow: false,
+	},
+};
+
 export default async function EditCyclePage({ params }) {
 	const session = await getServerSession(authOptions);
 

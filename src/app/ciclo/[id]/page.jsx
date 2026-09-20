@@ -6,6 +6,14 @@ import { authOptions } from "@/lib/authConfig";
 import { cycleService } from "@/lib/modules/cycle/cycle.service";
 import Link from "next/link";
 
+export const metadata = {
+	title: "Acompanhar Ciclo",
+	robots: {
+		index: false,
+		follow: false,
+	},
+};
+
 export default async function CyclePage({ params }) {
 	const session = await getServerSession(authOptions);
 

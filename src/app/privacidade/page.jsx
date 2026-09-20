@@ -1,6 +1,12 @@
-"use client";
-
 import { Box, Card, CardContent, Container, Divider, Stack, Typography } from "@mui/material";
+
+export const metadata = {
+	title: "Política de Privacidade",
+	description: "Conheça como o StudyCycle coleta, armazena e protege seus dados de autenticação e estudo de forma transparente e segura.",
+	alternates: {
+		canonical: "/privacidade",
+	},
+};
 
 export default function PrivacidadePage() {
 	return (

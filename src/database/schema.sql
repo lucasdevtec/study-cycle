@@ -56,3 +56,9 @@ CREATE TABLE IF NOT EXISTS cycle_subjects (
 ALTER TABLE cycle_subjects 
 ADD CONSTRAINT check_hours_limit 
 CHECK (hours_done >= 0 AND hours_done <= recommended_hours);
+
+-- indexes for performance and fast lookups
+CREATE INDEX IF NOT EXISTS idx_cycles_user_id ON cycles(user_id);
+CREATE INDEX IF NOT EXISTS idx_cycle_subjects_cycle_id ON cycle_subjects(cycle_id);
+CREATE INDEX IF NOT EXISTS idx_accounts_user_id ON accounts(user_id);
+
